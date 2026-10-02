@@ -5,7 +5,7 @@
 */
 const ROMA_CONFIG={
   /* ID do cliente OAuth do Google (termina com .apps.googleusercontent.com). Veja o README. */
-  googleClientId:'',
+  googleClientId:'701185201542-46gdu48jpro9et330k17dfcov31rh81u.apps.googleusercontent.com',
   /* ID do aplicativo Microsoft (Azure) e tenant. Use 'common' para qualquer conta. */
   microsoftClientId:'',
   microsoftTenant:'common',
