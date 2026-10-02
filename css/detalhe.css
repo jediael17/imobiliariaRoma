@@ -1,0 +1,244 @@
+/* Página de detalhe do imóvel */
+
+.det {
+  padding:130px 0 80px;
+}
+
+.back {
+  background:transparent;
+  border:1px solid rgba(184,147,90,.4);
+  color:var(--marfim);
+  border-radius:999px;
+  padding:10px 22px;
+  font:400 .9rem var(--sans);
+  cursor:pointer;
+  margin-bottom:24px;
+  transition:.25s;
+}
+
+.back:hover {
+  border-color:var(--ouro);
+  color:var(--ouro-claro);
+}
+
+.dgrid {
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  gap:32px;
+  align-items:start;
+}
+
+.gmain {
+  aspect-ratio:16/10;
+  border-radius:28px;
+  background-size:cover;
+  background-position:center;
+  border:1px solid rgba(184,147,90,.3);
+}
+
+.gth {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:10px;
+}
+
+.gth button {
+  aspect-ratio:16/10;
+  border-radius:16px;
+  border:2px solid transparent;
+  background-size:cover;
+  background-position:center;
+  cursor:pointer;
+  padding:0;
+  opacity:.65;
+  transition:.25s;
+}
+
+.gth button.on {
+  border-color:var(--ouro);
+  opacity:1;
+}
+
+.dinfo {
+  background:var(--grafite2);
+  border:1px solid rgba(184,147,90,.3);
+  border-radius:28px;
+  padding:28px;
+  position:sticky;
+  top:110px;
+}
+
+.drow {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.tag2 {
+  background:var(--ouro);
+  color:var(--grafite);
+  border-radius:999px;
+  padding:3px 14px;
+  font-size:.78rem;
+  font-weight:500;
+}
+
+.drow .cod {
+  font-size:.75rem;
+  letter-spacing:.12em;
+  opacity:.6;
+}
+
+.dinfo h2 {
+  font-size:2rem;
+  margin:0 0 4px;
+}
+
+.dinfo .loc {
+  margin:0 0 18px;
+  opacity:.75;
+}
+
+.dprice {
+  font:600 2.2rem var(--serif);
+  color:var(--ouro-claro);
+  margin-bottom:18px;
+}
+
+.dprice small {
+  font-size:1rem;
+  opacity:.8;
+}
+
+.buy {
+  width:100%;
+  background:var(--ouro);
+  border:0;
+  color:var(--grafite);
+  border-radius:999px;
+  padding:16px;
+  font:500 1rem var(--sans);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.buy:hover {
+  background:var(--ouro-claro);
+}
+
+.note {
+  font-size:.85rem;
+  opacity:.7;
+  margin:14px 0 0;
+}
+
+.dtext {
+  margin-top:44px;
+  max-width:900px;
+}
+
+.dtext h3 {
+  font:500 1.7rem var(--serif);
+  color:var(--ouro-claro);
+  margin:32px 0 12px;
+}
+
+.feats {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:12px;
+}
+
+.fe {
+  background:var(--grafite2);
+  border:1px solid rgba(184,147,90,.25);
+  border-radius:20px;
+  padding:16px;
+  display:grid;
+  gap:2px;
+  justify-items:start;
+}
+
+.fe svg {
+  width:26px;
+  height:26px;
+  color:var(--ouro-claro);
+}
+
+.fe b {
+  font:600 1.5rem var(--serif);
+}
+
+.fe span {
+  font-size:.85rem;
+  opacity:.75;
+}
+
+.spec {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0 32px;
+  margin:0;
+}
+
+.spec div {
+  display:flex;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid rgba(184,147,90,.2);
+}
+
+.spec dt {
+  opacity:.7;
+}
+
+.spec dd {
+  margin:0;
+}
+
+@media (max-width:900px) {
+  .dgrid {
+    grid-template-columns:1fr;
+  }
+  .dinfo {
+    position:static;
+  }
+  .spec {
+    grid-template-columns:1fr;
+  }
+  .det {
+    padding-top:110px;
+  }
+}
+
+.wa {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-top:10px;
+  border:1px solid #25d366;
+  color:#25d366;
+  border-radius:999px;
+  padding:14px;
+  font:500 .95rem var(--sans);
+  letter-spacing:.06em;
+  transition:.25s;
+}
+
+.wa:hover {
+  background:#25d366;
+  color:#0b2e17;
+}
+
+.soldmsg {
+  padding:14px 18px;
+  border-radius:18px;
+  background:rgba(140,47,47,.25);
+  border:1px solid #8c2f2f;
+  margin:0;
+}

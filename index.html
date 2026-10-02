@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ROMA Negócios Imobiliários | Patrimônio que atravessa gerações</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/hero.css">
+<link rel="stylesheet" href="css/secoes.css">
+<link rel="stylesheet" href="css/imoveis.css">
+<link rel="stylesheet" href="css/detalhe.css">
+<link rel="stylesheet" href="css/modais.css">
+</head>
+<body>
+<header class="nav" id="nav">
+ <div class="wrap">
+  <h1 class="logo"><a href="#inicio"><img src="img/logo.png" alt="ROMA Negócios Imobiliários – Patrimônio que atravessa gerações."></a></h1>
+  <button class="burger" id="burger" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
+  <nav id="menu" aria-label="Principal">
+   <ul>
+    <li><a class="link" href="#inicio">Início</a></li>
+    <li class="has-sub"><button class="link" aria-expanded="false" aria-haspopup="true">Imóveis ▾</button>
+     <div class="sub"><a href="#imoveis">Comprar</a><a href="#imoveis">Alugar</a><a href="#imoveis">Lançamentos</a><a href="#imoveis">Alto padrão</a></div></li>
+    <li><a class="link" href="#sobre">Sobre</a></li>
+    <li><a class="link" href="#servicos">Serviços</a></li>
+    <li><a class="link" href="#contato">Contato</a></li>
+    <li><button type="button" class="link" id="loginBtn">Entrar</button></li><li class="has-sub" id="userLi" hidden><button type="button" class="link" aria-expanded="false" aria-haspopup="true"></button><div class="sub"><a href="#" id="logoutBtn">Sair</a></div></li><li><a class="cta" href="https://wa.me/5531900000000?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20as%20vendas%20e%20aluguéis%20de%20imóveis%20da%20ROMA." target="_blank" rel="noopener">Fale com um corretor</a></li>
+   </ul>
+  </nav>
+ </div>
+</header>
+
+<main>
+<section class="hero" id="inicio" aria-label="Busca de imóveis">
+ <div class="slides" id="slides" aria-hidden="true"></div><div class="shade"></div>
+ <div class="wrap hero-in">
+  <h2 class="hl">Seu próximo patrimônio está aqui.</h2>
+  <div class="slidebar"><span id="cap"></span><div class="dots" id="dots"></div></div>
+  <div class="tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-tab="venda">Venda</button><button type="button" role="tab" aria-selected="false" data-tab="aluguel">Aluguel</button><button type="button" role="tab" aria-selected="false" data-tab="codigo">Código</button></div>
+  <form class="finder" id="finder">
+   <div class="g" id="gBusca">
+    <select id="fTipo" aria-label="Tipo de imóvel"></select><select id="fCidade" aria-label="Cidade"></select><select id="fBairro" aria-label="Bairro"></select>
+    <select id="fDorm" aria-label="Dormitórios"><option value="">Dormitórios</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option></select>
+    <select id="fBanh" aria-label="Banheiros"><option value="">Banheiros</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option></select>
+    <select id="fMin" aria-label="Valor mínimo"></select><select id="fMax" aria-label="Valor máximo"></select>
+    <button type="submit">Buscar</button>
+   </div>
+   <div class="g code" id="gCodigo" hidden><input id="fCod" aria-label="Código do imóvel" placeholder="Digite o código do imóvel"><button type="submit">Buscar</button></div>
+   <a class="full" href="#imoveis">Busca completa »</a>
+  </form>
+ </div>
+</section>
+
+<section id="pilares" style="padding:80px 0">
+ <div class="wrap pilares">
+  <div><h3>Patrimônio</h3><p>Imóveis escolhidos para preservar e valorizar o que você construiu.</p></div>
+  <div><h3>Estratégia</h3><p>Análise de mercado e planejamento antes de cada decisão.</p></div>
+  <div><h3>Confiança</h3><p>Processos claros e acompanhamento do primeiro contato à escritura.</p></div>
+ </div>
+</section>
+
+<section class="light" id="imoveis">
+ <div class="wrap">
+  <div class="head"><h2>Imóveis selecionados</h2><p>Uma curadoria de oportunidades com potencial de permanência e valorização.</p></div>
+  <div class="resbar"><span id="count" role="status" aria-live="polite"></span><button type="button" class="clear" id="clearF">Limpar filtros</button></div>
+  <div class="grid" id="grid"></div>
+  <p id="empty" hidden>Nenhum imóvel encontrado com esses filtros. Tente ampliar a busca ou limpe os filtros.</p>
+  <p style="margin-top:28px;font-size:.85rem;opacity:.6">Imóveis, valores e imagens ilustrativas de exemplo. Substitua pelo seu portfólio real.</p>
+ </div>
+</section>
+
+<section id="sobre">
+ <div class="wrap sobre">
+  <blockquote>ROMA não vende apenas imóveis. Conecta pessoas a patrimônio.</blockquote>
+  <div>
+   <h2>Uma imobiliária pensada para durar</h2>
+   <p>A ROMA nasce com posicionamento premium, sólido e contemporâneo. Nosso trabalho une arquitetura, investimento e negócios, sem a imagem de uma imobiliária tradicional.</p>
+   <p>Construímos relações de longo prazo, com a permanência e a solidez que um patrimônio exige.</p>
+  </div>
+ </div>
+</section>
+
+<section class="light" id="servicos">
+ <div class="wrap">
+  <div class="head"><h2>Serviços</h2></div>
+  <div class="servicos">
+   <div><h3>Compra e venda</h3><p>Avaliação, divulgação e negociação com acompanhamento completo.</p></div>
+   <div><h3>Locação</h3><p>Gestão de contratos e seleção criteriosa de locatários.</p></div>
+   <div><h3>Investimento imobiliário</h3><p>Análise de oportunidades para formar e proteger patrimônio.</p></div>
+   <div><h3>Assessoria documental</h3><p>Segurança jurídica em contratos, escrituras e registros.</p></div>
+  </div>
+ </div>
+</section>
+
+<section id="contato">
+ <div class="wrap contato">
+  <div><h2>Vamos conversar sobre o seu patrimônio</h2><p style="color:var(--marfim2)">Escolha como podemos ajudar e um corretor da ROMA retorna o contato.</p>
+   <p style="color:var(--ouro-claro)">contato@romaimobiliaria.com.br<br>(31) 00000-0000<br>Ibirité, Minas Gerais</p></div>
+  <div class="paths">
+   <button type="button" class="path" data-open="comprar"><b>Quero comprar</b><span>Conte o que você procura.</span></button>
+   <button type="button" class="path" data-open="vender"><b>Quero vender</b><span>Anuncie seu imóvel no site da ROMA.</span></button>
+  </div>
+ </div>
+</section>
+</main>
+
+<footer><div class="wrap"><div class="brand">ROMA</div><br>Negócios Imobiliários • Patrimônio que atravessa gerações.<br>© 2026 ROMA. Todos os direitos reservados.</div></footer>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mtitle">
+ <div class="mcard">
+  <button type="button" class="mclose" id="mclose" aria-label="Fechar">×</button>
+  <div class="mscroll"><h2 id="mtitle">Solicitação de compra</h2>
+  <div class="mtabs" role="tablist"><button type="button" role="tab" data-m="comprar" aria-selected="true">Quero comprar</button><button type="button" role="tab" data-m="vender" aria-selected="false">Quero vender</button></div>
+  <form class="mform" id="mform">
+   <div class="row"><input required name="nome" placeholder="Nome completo" aria-label="Nome completo"><input required type="tel" name="whatsapp" placeholder="WhatsApp" aria-label="WhatsApp"></div>
+   <input type="email" name="email" placeholder="E-mail" aria-label="E-mail">
+   <fieldset id="p-comprar">
+    <div class="row"><select aria-label="Tipo de imóvel"><option value="">Tipo de imóvel</option><option>Apartamento</option><option>Casa</option><option>Cobertura</option><option>Terreno</option><option>Comercial</option></select><input placeholder="Cidade" aria-label="Cidade"></div>
+    <input placeholder="Bairros de interesse" aria-label="Bairros de interesse">
+    <div class="row3"><select aria-label="Dormitórios"><option value="">Dormitórios</option><option>1+</option><option>2+</option><option>3+</option><option>4+</option></select><select aria-label="Banheiros"><option value="">Banheiros</option><option>1+</option><option>2+</option><option>3+</option></select><select aria-label="Vagas"><option value="">Vagas</option><option>1+</option><option>2+</option><option>3+</option></select></div>
+    <div class="row"><input inputmode="numeric" placeholder="Valor mínimo (R$)" aria-label="Valor mínimo"><input inputmode="numeric" placeholder="Valor máximo (R$)" aria-label="Valor máximo"></div>
+    <div class="row"><select aria-label="Forma de pagamento"><option value="">Forma de pagamento</option><option>Financiamento</option><option>À vista</option><option>FGTS + financiamento</option><option>Permuta</option></select><select aria-label="Prazo para comprar"><option value="">Prazo para comprar</option><option>Imediato</option><option>Até 3 meses</option><option>3 a 6 meses</option><option>Só pesquisando</option></select></div>
+    <textarea rows="3" placeholder="Observações (andar, área de lazer, perto de escola...)" aria-label="Observações"></textarea>
+    <label class="chk"><input type="checkbox" required> Aceito ser contatado pela ROMA sobre esta solicitação.</label>
+   </fieldset>
+   <fieldset id="p-vender" hidden disabled>
+    <div class="seg" role="radiogroup" aria-label="Finalidade"><label><input type="radio" name="fin" value="vender" checked><span>Vender</span></label><label><input type="radio" name="fin" value="alugar"><span>Alugar</span></label></div>
+    <div class="row"><select aria-label="Tipo do imóvel"><option value="">Tipo do imóvel</option><option>Apartamento</option><option>Casa</option><option>Cobertura</option><option>Terreno</option><option>Comercial</option></select><input required id="sellval" inputmode="numeric" placeholder="Valor pretendido (R$)" aria-label="Valor pretendido"></div>
+    <input required placeholder="Endereço (rua e número)" aria-label="Endereço">
+    <div class="row"><input required placeholder="Bairro" aria-label="Bairro"><input required placeholder="Cidade" aria-label="Cidade"></div>
+    <div class="row3"><input inputmode="numeric" placeholder="Área (m²)" aria-label="Área"><input inputmode="numeric" placeholder="Quartos" aria-label="Quartos"><input inputmode="numeric" placeholder="Vagas" aria-label="Vagas"></div>
+    <select aria-label="Situação do imóvel"><option value="">Situação do imóvel</option><option>Desocupado</option><option>Ocupado pelo proprietário</option><option>Alugado</option></select>
+    <textarea rows="3" placeholder="Descreva o imóvel (diferenciais, estado, condomínio...)" aria-label="Descrição do imóvel"></textarea>
+    <label class="file">Fotos do imóvel (opcional)<input type="file" accept="image/*" multiple></label>
+    <label class="chk"><input type="checkbox" required> <span id="authtxt">Autorizo a ROMA a anunciar este imóvel para venda no site.</span></label>
+   </fieldset>
+   <button type="submit" id="msend">Enviar</button>
+  </form>
+  <div class="mdone" id="mdone" hidden><h3>Recebemos seu contato</h3><p id="mdonetxt"></p><button type="button" class="mok" id="mok">Fechar</button></div></div>
+ </div>
+</div>
+<div class="modal" id="okmodal" hidden role="dialog" aria-modal="true" aria-labelledby="oktitle">
+ <div class="mcard ok"><button type="button" class="mclose" id="okx" aria-label="Fechar">×</button>
+  <div class="mscroll"><div class="okic" aria-hidden="true">✓</div><h2 id="oktitle">Recebemos seu contato</h2><p id="oktxt"></p><button type="button" class="mok" id="okclose">Fechar</button></div>
+ </div>
+</div>
+<div class="modal" id="authmodal" hidden role="dialog" aria-modal="true" aria-labelledby="authtitle">
+ <div class="mcard"><button type="button" class="mclose" id="authx" aria-label="Fechar">×</button>
+  <div class="mscroll"><h2 id="authtitle">Acesse sua conta</h2>
+   <div class="atabs" role="tablist"><button type="button" role="tab" data-au="login" aria-selected="true">Entrar</button><button type="button" role="tab" data-au="cad" aria-selected="false">Cadastrar</button></div>
+   <div id="pLogin"><p class="note" style="margin:0 0 16px">Entre com sua conta Google para agilizar seus contatos e acompanhar suas solicitações.</p><button type="button" class="gbtn" data-g="login"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Entrar com Google</button></div>
+   <div id="pCad" hidden><p class="note" style="margin:0 0 14px">Crie sua conta na ROMA usando o Google. Rápido e sem senha para lembrar.</p><input id="cadWhats" inputmode="tel" placeholder="WhatsApp (opcional)" aria-label="WhatsApp" style="margin-bottom:12px"><label class="chk" style="margin-bottom:16px"><input type="checkbox" id="cadOk"> Aceito receber contato da ROMA sobre imóveis e solicitações.</label><button type="button" class="gbtn" data-g="cad"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Cadastrar com Google</button></div>
+   <p class="aerr" id="authmsg" role="alert" hidden></p>
+   <p class="note" id="demoNote" hidden>Modo demonstração: o login real do Google é ativado ao informar o ID do cliente no código (GOOGLE_CLIENT_ID).</p>
+  </div></div></div>
+<script src="config.js"></script>
+<script src="shared/storage.js"></script>
+<script src="shared/imoveis-exemplo.js"></script>
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/icones.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/arte.js"></script>
+<script src="js/carrossel.js"></script>
+<script src="js/contato.js"></script>
+<script src="js/catalogo.js"></script>
+<script src="js/detalhe.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+/* Estrutura do painel (menu lateral e topo) e desenho da página atual. */
+const NAV=[['dash','Painel'],['imv','Imóveis'],['neg','Vendas e locações'],['msg','Mensagens'],['cli','Clientes'],['team','Equipe'],['cfg','Configurações']];
+const TT={dash:'Painel',imv:'Imóveis',neg:'Vendas e locações',msg:'Mensagens recebidas',cli:'Clientes cadastrados',team:'Equipe e permissões',cfg:'Configurações'};
+function render(){const M=me();if(!M){try{sessionStorage.removeItem('roma_sess')}catch(x){}return login()}if(ADM.includes(page)&&!isAdm())page='dash';const nv=MS().filter(m=>m.status==='nova').length,PG={dash:pgDash,imv:pgImv,neg:pgNeg,msg:pgMsg,cli:pgCli,team:pgTeam,cfg:pgCfg};
+ $('app').innerHTML='<div class="shell"><aside class="side"><div class="sb">ROMA<small>ADMINISTRAÇÃO</small></div><nav>'+NAV.filter(n=>isAdm()||!ADM.includes(n[0])).map(n=>'<button data-p="'+n[0]+'" class="'+(page===n[0]?'on':'')+'">'+n[1]+(n[0]==='msg'&&nv?'<i>'+nv+'</i>':'')+'</button>').join('')+'</nav><div class="sf"><a href="'+SITE+'">Ver site ↗</a><button data-a="out">Sair</button></div></aside><div class="scrim" data-a="menu"></div><div class="main"><header class="top"><button class="mb" data-a="menu" aria-label="Menu">☰</button><h1>'+TT[page]+'</h1><span class="usr">'+esc(M.nome||M.email)+' '+bd(M.papel==='admin'?'adm':'col',PAPEL[M.papel])+'</span></header><div class="content">'+PG[page]()+'</div></div></div>';
+ if($('lst'))drawImv();if($('nlst'))drawNeg();
+ document.querySelectorAll('.th[data-k]').forEach(el=>{const i=IM.find(x=>x.cod===el.dataset.k);if(i&&i.fotos&&i.fotos[0])el.style.backgroundImage='url("'+i.fotos[0]+'")'});
+ document.querySelectorAll('[data-ph]').forEach(el=>el.style.backgroundImage='url("'+ed.fotos[+el.dataset.ph]+'")');
+ const h=document.querySelector('.msg.hl');if(h)h.scrollIntoView({block:'center'})}

@@ -1,0 +1,2 @@
+/* Inicialização do painel. */
+render();
