@@ -1,17 +1,101 @@
-/* Sessão, papéis (administrador / colaborador), login por senha e login único (Google e Microsoft). */
-const PAPEL={admin:'Administrador',colab:'Colaborador'},ADM=['cfg','team'];
-const TEAM=()=>DB.get('roma_team',[]);
-const SS=()=>{try{return JSON.parse(sessionStorage.getItem('roma_sess')||'null')}catch(e){return null}};
-const setSess=o=>{try{sessionStorage.setItem('roma_sess',JSON.stringify(o))}catch(e){}};
-function me(){const x=SS();if(!x)return null;if(x.via==='senha')return Object.assign({},x,{papel:'admin'});const t=TEAM().find(u=>u.email.toLowerCase()===String(x.email).toLowerCase());return t&&t.ativo!==false?Object.assign({},x,{nome:t.nome||x.nome,papel:t.papel}):null}
-const isAdm=()=>{const m=me();return !!m&&m.papel==='admin'},authed=()=>!!me();
-const GIC='<svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>',MIC='<svg viewBox="0 0 23 23" width="18" height="18" aria-hidden="true"><path fill="#f35325" d="M1 1h10v10H1z"/><path fill="#81bc06" d="M12 1h10v10H12z"/><path fill="#05a6f0" d="M1 12h10v10H1z"/><path fill="#ffba08" d="M12 12h10v10H12z"/></svg>';
-const lerr=t=>{const e=$('er');if(e){e.textContent=t;e.hidden=false}};
-function login(){$('app').innerHTML='<div class="lg"><form class="lgc" id="lf"><div class="lgb">ROMA<small>NEGÓCIOS IMOBILIÁRIOS</small></div><h1>Painel administrativo</h1><p class="sub">Entre com usuário e senha ou com sua conta corporativa.</p><label>Usuário<input id="u" autocomplete="username"></label><label>Senha<div class="pw"><input id="p" type="password" autocomplete="current-password"><button type="button" data-a="sp">Mostrar</button></div></label><p class="err" id="er" hidden></p><button class="btn primary lgbtn" type="submit">Entrar</button><div class="or"><span>ou entre com</span></div><div class="sso"><button type="button" class="btn ssob" data-a="sg">'+GIC+'Google</button><button type="button" class="btn ssob" data-a="sm">'+MIC+'Microsoft</button></div><a class="lnk" href="'+SITE+'">← Voltar ao site</a></form></div>';
- $('lf').onsubmit=e=>{e.preventDefault();if($('u').value.trim().toLowerCase()===String(CFG.usuario).toLowerCase()&&$('p').value===CFG.senha){setSess({email:'',nome:CFG.usuario,via:'senha'});render()}else lerr('Usuário ou senha incorretos.')};$('u').focus()}
-const loadScript=src=>new Promise((ok,no)=>{if(document.querySelector('script[src="'+src+'"]'))return ok();const x=document.createElement('script');x.src=src;x.onload=ok;x.onerror=no;document.head.appendChild(x)});
-function ssoDone(email,nome,via){const all=TEAM(),t=all.find(x=>x.email.toLowerCase()===String(email||'').toLowerCase());if(!t)return lerr('O e-mail '+email+' não tem acesso ao painel. Peça a um administrador para cadastrá-lo na aba Equipe.');if(t.ativo===false)return lerr('Este acesso foi inativado. Peça a um administrador para reativá-lo.');t.ultimo=new Date().toISOString();if(!t.nome&&nome)t.nome=nome;if(!DB.set('roma_team',all))return lerr('Não foi possível atualizar o último acesso. Tente novamente.');setSess({email:t.email,nome:t.nome||nome,via});render()}
-async function ssoGoogle(){if(!CFG.googleId)return lerr('Login com Google ainda não configurado. Entre com usuário e senha e informe o ID do cliente em Configurações.');
- try{await loadScript('https://accounts.google.com/gsi/client');google.accounts.oauth2.initTokenClient({client_id:CFG.googleId,scope:'openid email profile',callback:async r=>{if(r.error)return lerr('Login cancelado ou não autorizado.');try{const p=await(await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:{Authorization:'Bearer '+r.access_token}})).json();ssoDone(p.email,p.name,'Google')}catch(e){lerr('Não foi possível obter seus dados do Google.')}}}).requestAccessToken()}catch(e){lerr('Não foi possível carregar o login do Google.')}}
-async function ssoMs(){if(!CFG.msId)return lerr('Login com Microsoft ainda não configurado. Entre com usuário e senha e informe o ID do aplicativo em Configurações.');
- try{await loadScript('https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js');const app=new msal.PublicClientApplication({auth:{clientId:CFG.msId,authority:'https://login.microsoftonline.com/'+(CFG.msTenant||'common'),redirectUri:location.origin+location.pathname}});if(app.initialize)await app.initialize();const r=await app.loginPopup({scopes:['openid','profile','email']});ssoDone(r.account.username,r.account.name,'Microsoft')}catch(e){lerr('Não foi possível concluir o login com a Microsoft.')}}
+/* Supabase Auth session and server-verified team access. */
+const PAPEL = { admin: 'Administrador', colab: 'Colaborador' };
+const ADM = ['cfg', 'team'];
+let TEAM_DATA = [];
+let ADMIN_SESSION = null;
+
+const TEAM = () => TEAM_DATA;
+const SS = () => ADMIN_SESSION;
+const setSess = value => { ADMIN_SESSION = value; };
+
+function me() {
+  const session = SS();
+  if (!session || !session.email) return null;
+  const member = TEAM().find(person => person.email.toLowerCase() === session.email.toLowerCase());
+  return member && member.ativo !== false
+    ? Object.assign({}, session, { nome: member.nome || session.nome, papel: member.papel })
+    : null;
+}
+
+const isAdm = () => { const user = me(); return !!user && user.papel === 'admin'; };
+const authed = () => !!me();
+
+const GIC = '<svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 2.56 13.22l7.97 6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+const lerr = text => {
+  const message = $('er');
+  if (message) { message.textContent = text; message.hidden = false; }
+};
+
+function login() {
+  $('app').innerHTML = '<div class="lg"><div class="lgc"><div class="lgb">ROMA<small>NEGÓCIOS IMOBILIÁRIOS</small></div><h1>Painel administrativo</h1><p class="sub">Acesso exclusivo à equipe autorizada.</p><p class="err" id="er" role="alert" hidden></p><button class="btn primary lgbtn" type="button" data-a="sg">' + GIC + 'Entrar com Google</button><a class="lnk" href="' + SITE + '">← Voltar ao site</a></div></div>';
+}
+
+async function refreshAdminTeam() {
+  const { data, error } = await requireSupabase().from('equipe').select('*').order('nome');
+  if (error) throw error;
+  TEAM_DATA = (data || []).map(person => Object.assign({}, person, {
+    papel: person.papel === 'admin' ? 'admin' : 'colab',
+    ultimo: person.ultimo_acesso || null
+  }));
+  return TEAM_DATA;
+}
+
+async function applyAdminSession(session) {
+  if (!session) {
+    TEAM_DATA = [];
+    ADMIN_SESSION = null;
+    render();
+    return;
+  }
+  const { data, error } = await requireSupabase().auth.getUser();
+  if (error) throw error;
+  if (!data.user || !data.user.email) throw new Error('A conta autenticada não informou um e-mail.');
+  await refreshAdminTeam();
+  const member = TEAM().find(person => person.email.toLowerCase() === data.user.email.toLowerCase());
+  if (!member || member.ativo === false) {
+    await requireSupabase().auth.signOut();
+    throw new Error('Este e-mail não tem acesso ativo ao painel. Peça a um administrador para cadastrá-lo na equipe.');
+  }
+  const adminData = await loadAdminProperties();
+  IM = adminData.properties;
+  ANUNCIANTES = adminData.advertisers;
+  setSess({
+    email: member.email,
+    nome: member.nome || data.user.user_metadata && (data.user.user_metadata.full_name || data.user.user_metadata.name) || member.email,
+    via: 'supabase'
+  });
+  const { error: accessError } = await requireSupabase().rpc('registrar_acesso');
+  if (accessError) throw accessError;
+  render();
+}
+
+async function initializeAdminAuth() {
+  if (!supabaseClient) {
+    login();
+    lerr('O Supabase não foi carregado. Verifique a conexão e atualize a página.');
+    return;
+  }
+  requireSupabase().auth.onAuthStateChange((_event, session) => {
+    setTimeout(() => applyAdminSession(session).catch(error => {
+      console.error('Falha ao validar o acesso administrativo.', error);
+      login();
+      lerr(supabaseMessage(error));
+    }), 0);
+  });
+  const { data, error } = await requireSupabase().auth.getSession();
+  if (error) throw error;
+  await applyAdminSession(data.session);
+}
+
+async function ssoGoogle() {
+  try {
+    const { error } = await requireSupabase().auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: location.href }
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.error('Falha ao iniciar o login Google do painel.', error);
+    lerr(supabaseMessage(error));
+  }
+}

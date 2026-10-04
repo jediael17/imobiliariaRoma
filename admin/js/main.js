@@ -1,3 +1,6 @@
 /* Inicialização do painel. */
-render();
-setInterval(()=>{if(archiveExpiredProperties(IM)){if(!saveIM())return;if(authed()&&!ed&&!$('ov')&&['dash','imv','neg','notif','mine'].includes(page))render()}},60000);
+initializeAdminAuth().catch(error=>{
+ console.error('Não foi possível inicializar a autenticação do painel.',error);
+ login();
+ lerr(supabaseMessage(error));
+});

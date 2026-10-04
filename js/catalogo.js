@@ -1,16 +1,35 @@
 /* Lista de imóveis: cards, filtros e busca. */
-const storedProperties=DB.get('roma_imoveis',[]);
-let IM=removeDemoProperties(storedProperties);
-if(Array.isArray(storedProperties)&&IM.length!==storedProperties.length&&!DB.set('roma_imoveis',IM))console.error('Não foi possível remover os imóveis demonstrativos salvos no navegador.');
-if(archiveExpiredProperties(IM)&&!DB.set('roma_imoveis',IM))console.error('Não foi possível salvar o arquivamento automático dos imóveis.');
+let IM=[];
 const publishedIM=()=>IM.filter(i=>!i.arquivado);
 const imgOf=(i,vb)=>i.fotos&&i.fotos.length?i.fotos[0]:svgUrl(i.art,vb);
-const favoriteStoreKey='roma_favoritos';
-const favoriteAccount=()=>String(USER&&USER.email||'').trim().toLowerCase();
-const favoriteMap=()=>{const value=DB.get(favoriteStoreKey,{});return value&&typeof value==='object'&&!Array.isArray(value)?value:{}};
-const favoriteCodes=()=>{const email=favoriteAccount(),map=favoriteMap();return email&&Array.isArray(map[email])?map[email]:[]};
+let favoriteIds=new Set();
+const favoriteAccount=()=>String(USER&&USER.id||'');
+const favoriteCodes=()=>IM.filter(property=>favoriteIds.has(property.id)).map(property=>property.cod);
+async function loadUserFavorites(){
+ favoriteIds.clear();
+ if(!USER){apply();return}
+ const {data,error}=await requireSupabase().from('favoritos').select('imovel_id').eq('user_id',USER.id);
+ if(error)throw error;
+ favoriteIds=new Set((data||[]).map(favorite=>favorite.imovel_id));
+ apply();
+}
+function clearUserFavorites(){favoriteIds.clear();if(typeof apply==='function')apply()}
 const favoriteButton=i=>{if(!favoriteAccount())return'';const active=favoriteCodes().includes(i.cod);return '<button type="button" class="favorite'+(active?' active':'')+'" data-favorite="'+i.cod+'" aria-label="'+(active?'Remover '+i.titulo+' dos favoritos':'Adicionar '+i.titulo+' aos favoritos')+'" aria-pressed="'+active+'" title="'+(active?'Remover dos favoritos':'Adicionar aos favoritos')+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg></button>'};
-const toggleFavorite=cod=>{const email=favoriteAccount();if(!email)return;const map=favoriteMap(),codes=Array.isArray(map[email])?map[email]:[],next=codes.includes(cod)?codes.filter(value=>value!==cod):[...codes,cod];map[email]=next;if(!DB.set(favoriteStoreKey,map)){console.error('Não foi possível salvar os imóveis favoritos.');alert('Não foi possível salvar o favorito. Verifique o espaço disponível no navegador.');return}apply()};
+const toggleFavorite=async cod=>{
+ const property=IM.find(item=>item.cod===cod);
+ if(!favoriteAccount()||!property)return;
+ const isFavorite=favoriteIds.has(property.id),client=requireSupabase();
+ const result=isFavorite
+  ?await client.from('favoritos').delete().eq('user_id',USER.id).eq('imovel_id',property.id)
+  :await client.from('favoritos').insert({user_id:USER.id,imovel_id:property.id});
+ if(result.error){
+  console.error('Não foi possível atualizar o imóvel favorito.',result.error);
+  alert('Não foi possível salvar o favorito. '+supabaseMessage(result.error));
+  return;
+ }
+ if(isFavorite)favoriteIds.delete(property.id);else favoriteIds.add(property.id);
+ apply();
+};
 const stTag=i=>'<span class="tag'+(i.st&&i.st!=='disp'?' sold':'')+'">'+(i.st==='vendido'?'Vendido':i.st==='alugado'?'Alugado':i.fin==='venda'?'Venda':'Aluguel')+'</span>';
 const desc=i=>i.tipo+' com '+F(i.area)+' m² de área útil'+(i.q?', '+pl(i.q,'quarto','quartos')+(i.s?' ('+pl(i.s,'suíte','suítes')+')':''):'')+', '+pl(i.b,'banheiro','banheiros')+' e garagem para '+pl(i.v,'carro','carros')+'.';
 const it=(k,n,t)=>'<span title="'+t+'" aria-label="'+t+'">'+IC[k]+n+'</span>';
@@ -41,7 +60,4 @@ document.querySelectorAll('.tabs button').forEach(t=>t.onclick=()=>{document.que
 $('finder').onsubmit=e=>{e.preventDefault();apply();$('imoveis').scrollIntoView({behavior:'smooth'})};
 $('clearF').onclick=()=>{['fTipo','fCidade','fDorm','fBanh','fMin','fMax'].forEach(id=>$(id).value='');$('fCod').value='';fillBairro();run()};
  $('grid').addEventListener('click',e=>{const button=e.target.closest('[data-favorite]');if(button){e.preventDefault();e.stopPropagation();toggleFavorite(button.dataset.favorite)}});
-const refreshPublishedListings=()=>{if(archiveExpiredProperties(IM)&&!DB.set('roma_imoveis',IM))console.error('Não foi possível salvar o arquivamento automático dos imóveis.');opts('fTipo','Tipo de imóvel',uniq(publishedIM().map(i=>i.tipo)));opts('fCidade','Todas as cidades',uniq(publishedIM().map(i=>i.cidade)));fillBairro();apply();if(detCur&&IM.some(i=>i.cod===detCur&&i.arquivado))showHome()};
-setInterval(refreshPublishedListings,60000);
-addEventListener('storage',e=>{if(e.key!=='roma_imoveis')return;IM=DB.get('roma_imoveis',IM);refreshPublishedListings()});
-addEventListener('storage',e=>{if(e.key===favoriteStoreKey)apply()});
+const refreshPublishedListings=()=>{opts('fTipo','Tipo de imóvel',uniq(publishedIM().map(i=>i.tipo)));opts('fCidade','Todas as cidades',uniq(publishedIM().map(i=>i.cidade)));fillBairro();apply();if(detCur&&!IM.some(i=>i.cod===detCur))showHome()};

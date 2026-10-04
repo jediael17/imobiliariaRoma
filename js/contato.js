@@ -1,5 +1,33 @@
 /* Card de contato (comprar / vender / alugar), confirmação e gravação das mensagens. */
-function saveMsg(tp){const f=[];mform.querySelectorAll('input,select,textarea').forEach(el=>{if(el.matches(':disabled')||el.type==='file'||el.type==='checkbox')return;if(el.type==='radio'&&!el.checked)return;let v=(el.value||'').trim();if(!v)return;const k=el.name==='fin'?'Finalidade':(el.getAttribute('aria-label')||el.placeholder||'Campo');if(el.dataset.mask==='brl')v=formatBRLValue(parseBRLInput(v));if(el.name==='fin')v=v==='alugar'?'Alugar':'Vender';f.push({k,v})});if(USER)f.push({k:'Conta Google',v:USER.email});const ms=DB.get('roma_msgs',[]);ms.unshift({id:Date.now(),data:new Date().toISOString(),tipo:tp,status:'nova',campos:f});DB.set('roma_msgs',ms)}
+async function saveMsg(tp){
+ const fields=[];
+ mform.querySelectorAll('input,select,textarea').forEach(el=>{
+  if(el.matches(':disabled')||el.type==='file'||el.type==='checkbox')return;
+  if(el.type==='radio'&&!el.checked)return;
+  let value=(el.value||'').trim();
+  if(!value)return;
+  const key=el.name==='fin'?'Finalidade':(el.getAttribute('aria-label')||el.placeholder||'Campo');
+  if(el.dataset.mask==='brl')value=formatBRLValue(parseBRLInput(value));
+  if(el.name==='fin')value=value==='alugar'?'Alugar':'Vender';
+  fields.push({k:key,v:value});
+ });
+
+ const valueFor=label=>(fields.find(field=>field.k===label)||{}).v||'';
+ const type=tp==='vender'?(mform.fin.value==='alugar'?'alugar':'vender'):tp;
+ const details={
+  campos:fields.filter(field=>!['Nome completo','WhatsApp','E-mail'].includes(field.k)),
+  conta:USER&&USER.email||null
+ };
+ const {error}=await requireSupabase().from('mensagens').insert({
+  tipo:type,
+  nome:valueFor('Nome completo'),
+  telefone:valueFor('WhatsApp')||null,
+  email:valueFor('E-mail')||null,
+  detalhes:details,
+  aceite_politica_versao:POLICY_VERSION
+ });
+ if(error)throw error;
+}
 
 const modal=document.getElementById('modal'),mform=document.getElementById('mform'),mdone=document.getElementById('mdone');let lastF,tab='comprar';
 function setTab(t){tab=t;document.querySelectorAll('.mtabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.m===t));['comprar','vender'].forEach(k=>{const f=document.getElementById('p-'+k);f.hidden=k!==t;f.disabled=k!==t});document.getElementById('mtitle').textContent=t==='vender'?'Venda ou aluguel do seu imóvel':'Solicitação de compra'}
@@ -17,8 +45,21 @@ function closeOk(){okm.classList.remove('show');setTimeout(()=>{okm.hidden=true}
 document.getElementById('okclose').onclick=closeOk;document.getElementById('okx').onclick=closeOk;
 okm.addEventListener('click',e=>{if(e.target===okm)closeOk()});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&!okm.hidden)closeOk()});
-mform.onsubmit=e=>{e.preventDefault();const v=tab==='vender',sol=document.getElementById('mtitle').textContent.includes('aluguel')?'aluguel':'compra';
- const t=v?'Nossa equipe vai avaliar seu imóvel e falar com você para anunciá-lo no site para '+(mform.fin.value==='alugar'?'aluguel':'venda')+'.':'Cadastramos sua solicitação de '+sol+'. Um corretor da ROMA vai falar com você pelo WhatsApp em breve.';
- saveMsg(v?'vender':'comprar');mform.reset();updFin();closeModal();openOk(t)};
+mform.onsubmit=async e=>{
+ e.preventDefault();
+ const error=document.getElementById('mformError'),submit=document.getElementById('msend'),v=tab==='vender';
+ error.hidden=true;submit.disabled=true;
+ try{
+  const sol=document.getElementById('mtitle').textContent.includes('aluguel')?'aluguel':'compra';
+  if(v&&mform.querySelector('#p-vender input[type=file]').files.length)throw new Error('O envio de fotos pelo formulário ainda não está disponível. Envie as imagens pelo WhatsApp após o contato da equipe.');
+  await saveMsg(v?'vender':'comprar');
+  const text=v?'Nossa equipe vai avaliar seu imóvel e falar com você para anunciá-lo no site para '+(mform.fin.value==='alugar'?'aluguel':'venda')+'.':'Cadastramos sua solicitação de '+sol+'. Um corretor da ROMA vai falar com você em breve.';
+  mform.reset();updFin();closeModal();openOk(text);
+ }catch(failure){
+  console.error('Falha ao registrar o contato no Supabase.',failure);
+  error.textContent='Não foi possível enviar sua solicitação. '+supabaseMessage(failure);
+  error.hidden=false;
+ }finally{submit.disabled=false}
+};
 function updFin(){const a=mform.fin.value==='alugar';document.getElementById('sellval').placeholder=a?'Valor do aluguel (R$/mês)':'Valor pretendido (R$)';document.getElementById('authtxt').textContent='Autorizo a ROMA a anunciar este imóvel para '+(a?'aluguel':'venda')+' no site.'}
 mform.querySelectorAll('[name=fin]').forEach(r=>r.onchange=updFin);

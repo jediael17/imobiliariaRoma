@@ -108,7 +108,7 @@
 </section>
 </main>
 
-<footer><div class="wrap"><div class="brand">ROMA</div><br>Negócios Imobiliários • Patrimônio que atravessa gerações.<br>© 2026 ROMA. Todos os direitos reservados.</div></footer>
+<footer><div class="wrap"><div class="brand">ROMA</div><br>Negócios Imobiliários • Patrimônio que atravessa gerações.<br>© 2026 ROMA. Todos os direitos reservados.<br><a href="docs/privacidade/politica-de-privacidade.html">Política de Privacidade</a></div></footer>
 
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mtitle">
  <div class="mcard">
@@ -125,7 +125,7 @@
     <div class="row"><input inputmode="decimal" placeholder="Valor mínimo (R$)" aria-label="Valor mínimo" data-mask="brl"><input inputmode="decimal" placeholder="Valor máximo (R$)" aria-label="Valor máximo" data-mask="brl"></div>
     <div class="row"><select aria-label="Forma de pagamento"><option value="">Forma de pagamento</option><option>Financiamento</option><option>À vista</option><option>FGTS + financiamento</option><option>Permuta</option></select><select aria-label="Prazo para comprar"><option value="">Prazo para comprar</option><option>Imediato</option><option>Até 3 meses</option><option>3 a 6 meses</option><option>Só pesquisando</option></select></div>
     <textarea rows="3" placeholder="Observações (andar, área de lazer, perto de escola...)" aria-label="Observações"></textarea>
-    <label class="chk"><input type="checkbox" required> Aceito ser contatado pela ROMA sobre esta solicitação.</label>
+    <label class="chk"><input type="checkbox" required> Li a     <a href="docs/privacidade/politica-de-privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a> e autorizo a ROMA a usar meus dados para responder a esta solicitação.</label>
    </fieldset>
    <fieldset id="p-vender" hidden disabled>
     <div class="seg" role="radiogroup" aria-label="Finalidade"><label><input type="radio" name="fin" value="vender" checked><span>Vender</span></label><label><input type="radio" name="fin" value="alugar"><span>Alugar</span></label></div>
@@ -139,8 +139,9 @@
     <select aria-label="Situação do imóvel"><option value="">Situação do imóvel</option><option>Desocupado</option><option>Ocupado pelo proprietário</option><option>Alugado</option></select>
     <textarea rows="3" placeholder="Descreva o imóvel (diferenciais, estado, condomínio...)" aria-label="Descrição do imóvel"></textarea>
     <label class="file">Fotos do imóvel (opcional)<input type="file" accept="image/*" multiple></label>
-    <label class="chk"><input type="checkbox" required> <span id="authtxt">Autorizo a ROMA a anunciar este imóvel para venda no site.</span></label>
+    <label class="chk"><input type="checkbox" required> Li a     <a href="docs/privacidade/politica-de-privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a> e <span id="authtxt">autorizo a ROMA a anunciar este imóvel para venda no site.</span></label>
    </fieldset>
+   <p class="aerr" id="mformError" role="alert" hidden></p>
    <button type="submit" id="msend">Enviar</button>
   </form>
   <div class="mdone" id="mdone" hidden><h3>Recebemos seu contato</h3><p id="mdonetxt"></p><button type="button" class="mok" id="mok">Fechar</button></div></div>
@@ -155,12 +156,14 @@
  <div class="mcard"><button type="button" class="mclose" id="authx" aria-label="Fechar">×</button>
   <div class="mscroll"><h2 id="authtitle">Acesse sua conta</h2>
    <div class="atabs" role="tablist"><button type="button" role="tab" data-au="login" aria-selected="true">Entrar</button><button type="button" role="tab" data-au="cad" aria-selected="false">Cadastrar</button></div>
+   <label class="chk" style="margin:0 0 16px"><input type="checkbox" id="authPolicyOk"> Li e aceito a    <a href="docs/privacidade/politica-de-privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</label>
    <div id="pLogin"><p class="note" style="margin:0 0 16px">Entre com sua conta Google para agilizar seus contatos e acompanhar suas solicitações.</p><button type="button" class="gbtn" data-g="login"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Entrar com Google</button></div>
    <div id="pCad" hidden><p class="note" style="margin:0 0 14px">Crie sua conta na ROMA usando o Google. Rápido e sem senha para lembrar.</p><input id="cadWhats" inputmode="tel" placeholder="WhatsApp (opcional)" aria-label="WhatsApp" style="margin-bottom:12px"><label class="chk" style="margin-bottom:16px"><input type="checkbox" id="cadOk"> Aceito receber contato da ROMA sobre imóveis e solicitações.</label><button type="button" class="gbtn" data-g="cad"><svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Cadastrar com Google</button></div>
    <p class="aerr" id="authmsg" role="alert" hidden></p>
-   <p class="note" id="demoNote" hidden>Modo demonstração: o login real do Google é ativado ao informar o ID do cliente no código (GOOGLE_CLIENT_ID).</p>
   </div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<script src="shared/supabase.js"></script>
 <script src="shared/storage.js"></script>
 <script src="shared/design-slides.js"></script>
 <script src="shared/masks.js"></script>

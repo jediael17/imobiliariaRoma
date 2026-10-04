@@ -10,4 +10,4 @@ function renderSlides(){
 }
 function go(i){if(!SLIDES.length)return;cur=i;[...box.children].forEach((e,k)=>e.classList.toggle('on',k===i));[...dots.children].forEach((e,k)=>e.classList.toggle('on',k===i));cap.textContent=SLIDES[i].label}
 function start(){clearInterval(timer);if(SLIDES.length>1)timer=setInterval(()=>go((cur+1)%SLIDES.length),6500)}
-designSlidesLoad().then(images=>{SLIDES=images.slice(0,10).map((image,index)=>({img:image.data,label:'Imagem de destaque '+(index+1)}));renderSlides()}).catch(error=>{renderSlides();console.error('Não foi possível carregar as imagens configuradas do carrossel.',error)});
+designSlidesLoad().then(images=>{SLIDES=images.slice(0,10).map((image,index)=>({img:image.data,label:'Imagem de destaque '+(index+1)}));renderSlides()}).catch(error=>{renderSlides();cap.textContent='Não foi possível carregar as imagens de destaque.';console.error('Não foi possível carregar as imagens configuradas do carrossel.',error)});

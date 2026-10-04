@@ -7,11 +7,13 @@ Site de imobiliária (vitrine de imóveis, busca, contato por WhatsApp e login c
 
 ```
 index.html            Site público
-config.js            Configurações (ID do Google, WhatsApp). EDITE ESTE ARQUIVO
+config.js            URL/chave publishable do Supabase e WhatsApp. EDITE ESTE ARQUIVO
 img/                 Logo
 css/                 Estilos do site, um arquivo por parte da página
 js/                  Scripts do site, um arquivo por função
 shared/              Código usado pelo site e pelo painel (armazenamento, máscaras e integrações)
+supabase/sql/        Scripts SQL para configuração e correções do banco Supabase
+docs/privacidade/    Política de privacidade publicada e documentação interna LGPD
 admin/
   index.html         Painel administrativo (endereço: /admin/)
   css/ js/           Estilos e scripts do painel, um arquivo por página
@@ -36,7 +38,7 @@ Os códigos de novos imóveis seguem o formato `RMAAAANNN` (por exemplo, `RM2026
 
 Clientes conectados podem favoritar imóveis na vitrine. Os favoritos ficam salvos por conta neste navegador, aparecem destacados no card e são priorizados no início da lista.
 
-Em **Configurações > Design da página inicial**, administradores podem configurar até 10 imagens para o carrossel principal. Cada imagem é limitada a 10 MB; as maiores são compactadas automaticamente e o painel mostra o progresso. Depois de adicionar ou remover imagens, clique em **Salvar imagens** para publicar as alterações. Se nenhuma imagem estiver configurada, o carrossel fica vazio até que novas imagens sejam adicionadas. As imagens são armazenadas localmente no IndexedDB do navegador e não fazem parte do arquivo de backup comum.
+Em **Configurações > Design da página inicial**, administradores podem configurar até 10 imagens para o carrossel principal. Cada imagem é limitada a 10 MB; as maiores são compactadas automaticamente e o painel mostra o progresso. Depois de adicionar ou remover imagens, clique em **Salvar imagens** para publicar as alterações. As imagens são armazenadas no bucket `carrossel` do Supabase.
 
 Na área **Notificações**, mensagens novas ficam compactas e só podem ser assumidas; os detalhes são expandidos pelo ícone de seta. Ao assumir, a mensagem sai da fila geral e passa para **Meus clientes**. Colaboradores veem apenas os próprios atendimentos, e administradores veem todos. Em Meus clientes, os filtros separam atendimentos em andamento, negociações concluídas e mensagens concluídas sem negócio. Para mensagens de pessoas que querem anunciar, a equipe pode cadastrar o imóvel ou encerrar a solicitação como sem negociação, registrando uma observação opcional. Ao salvar o imóvel cadastrado a partir de uma mensagem de anúncio, o atendimento é marcado como concluído com a tag **Anúncio criado** e aparece no filtro **Concluídos**. Colaboradores solicitam exclusões informando o motivo; administradores aprovam ou recusam essas solicitações. Mensagens vinculadas a uma venda concluída não podem ser excluídas, e a ação de exclusão fica oculta. Mensagens de compra podem ser convertidas em vendas vinculadas a um imóvel; para concluir, informe os dados do comprador e, opcionalmente, anexe arquivos PDF ou Word (DOC/DOCX) de até 1 MB cada. Ao editar uma venda em **Vendas e locações**, também é possível acrescentar vários arquivos nesses formatos sem remover os documentos já anexados. Em **Meus clientes > Concluídos**, os detalhes da venda e do comprador ficam visíveis ao abrir o atendimento; ícones PDF ou DOC no canto inferior direito permitem baixar os documentos. Como o projeto não possui backend, os documentos são armazenados localmente no navegador junto aos dados do negócio, não enviados a um servidor. Os dados do comprador ficam somente no painel, são adicionados a **Clientes cadastrados** e entram no backup administrativo. Ao registrar uma venda diretamente em **Imóveis**, também é possível selecionar um cliente cadastrado ou incluir seus dados pessoais. A venda fica atribuída ao responsável e marcada como concluída em **Meus clientes**. Vendas financiadas registram a entrada, a quantidade de parcelas e o valor de cada parcela, dados também exibidos na lista de negócios e no CSV exportado. Ao registrar uma venda ou locação, o colaborador fica identificado automaticamente; administradores podem escolher o próprio nome ou um colaborador como responsável. A aba **Clientes cadastrados** reúne compradores que se cadastraram no site, anunciantes associados aos imóveis e clientes registrados em vendas, identificando cada perfil com sua respectiva tag. As ações da lista de imóveis são representadas por ícones com descrições acessíveis. A edição de um negócio fica disponível por sete dias e é limitada ao colaborador responsável e aos administradores.
 
@@ -50,27 +52,24 @@ python3 -m http.server 8000
 
 Abra `http://localhost:8000` (site) e `http://localhost:8000/admin/` (painel).
 
-## Ativar o login com Google
+## Login com Google pelo Supabase
 
-1. Acesse o [Google Cloud Console](https://console.cloud.google.com/) e crie (ou escolha) um projeto.
-2. Em **APIs e serviços > Tela de permissão OAuth**, escolha **Externo**, preencha o nome do app e seu e-mail. Os escopos usados (`openid`, `email`, `profile`) são básicos e não exigem verificação do Google. Enquanto o app estiver em "Teste", adicione os e-mails que vão entrar em **Usuários de teste**; para liberar a qualquer pessoa, clique em **Publicar app**.
-3. Em **Credenciais > Criar credenciais > ID do cliente OAuth**, tipo **Aplicativo da Web**.
-4. Em **Origens JavaScript autorizadas**, adicione (somente o domínio, sem caminho e sem barra no final):
-   - `https://SEU-USUARIO.github.io`
-   - `http://localhost:8000` (para testar no seu computador)
-5. Copie o **ID do cliente** (termina em `.apps.googleusercontent.com`) e cole em `config.js`, no campo `googleClientId`.
-6. Faça commit e push. Em alguns minutos o botão **Entrar** do site e o botão **Google** do painel passam a funcionar.
+O site e o painel iniciam o login Google pelo Supabase Auth. Cadastre as credenciais OAuth do Google em **Authentication > Sign In / Providers > Google** no Supabase; o segredo OAuth deve ficar somente no painel do provedor, nunca no repositório.
 
-Nunca coloque a "chave secreta do cliente" no projeto. Ela não é usada aqui.
+Em **Authentication > URL Configuration**, configure:
 
-### Login com Microsoft (opcional)
+- Site URL: `https://jediael17.github.io/imobiliariaRoma/`
+- Redirect URLs de produção: `https://jediael17.github.io/imobiliariaRoma/` e `https://jediael17.github.io/imobiliariaRoma/admin/`
+- Redirect URLs locais: `http://localhost:8000/` e `http://localhost:8000/admin/`
 
-Registre um aplicativo no Azure (Microsoft Entra ID), tipo **Aplicativo de página única**, com URI de redirecionamento `https://SEU-USUARIO.github.io/NOME-DO-REPOSITORIO/admin/`. Cole o ID do aplicativo em `microsoftClientId` no `config.js`.
+Esses endereços já foram adicionados no painel deste projeto. Confirme também no Google Cloud Console o callback OAuth exibido pelo Supabase.
+
+Para o banco já existente, execute uma vez `supabase/sql/03_corrigir_views_publicas.sql` no SQL Editor. O teste no site encontrou falta de permissão de leitura nas views públicas; essa migração ajusta as views sem conceder acesso público direto às tabelas privadas. **Não execute `supabase/sql/01_estrutura.sql` novamente.**
 
 ## Painel administrativo
 
-- Primeiro acesso: usuário `admin` e senha `roma2026`. **Troque a senha em Configurações assim que entrar**, pois este repositório é público.
-- Em **Equipe**, cadastre o e-mail de cada pessoa com o papel **Administrador** ou **Colaborador**. Elas entram pelos botões Google/Microsoft.
+- O painel não tem mais senha padrão local. O acesso exige login Google pelo Supabase e um e-mail ativo na tabela `public.equipe`.
+- Em **Equipe**, um administrador pode cadastrar o e-mail e o papel de cada pessoa. O provedor Google do Supabase deve estar habilitado.
 - A equipe não é excluída: administradores podem inativar ou reativar cada acesso. A inativação preserva os dados e históricos da pessoa e bloqueia novas sessões e sessões já abertas.
 - Colaborador: lê mensagens, cadastra imóveis e registra vendas/locações. Não vê Configurações nem Equipe e não exclui clientes.
 - As tabelas e registros do painel usam uma área de conteúdo mais larga; em **Imóveis**, o botão de registrar venda ou locação usa o ícone de dinheiro.
@@ -88,14 +87,10 @@ git push -u origin main
 
 No GitHub: **Settings > Pages > Build and deployment > Deploy from a branch > main / (root)**. O site fica em `https://SEU-USUARIO.github.io/NOME-DO-REPOSITORIO/` e o painel em `.../admin/`.
 
-## Limitações importantes
+## Estado da integração e produção
 
-Não há servidor. Imóveis cadastrados, dados pessoais dos anunciantes e dos clientes das vendas, mensagens, clientes, equipe e imagens do carrossel ficam no **navegador de quem usa** (localStorage/IndexedDB). Os dados pessoais de anunciantes e compradores ficam separados da lista pública, mas não são criptografados; qualquer pessoa com acesso ao navegador ou às ferramentas de desenvolvimento pode visualizá-los. Não use este armazenamento para dados pessoais sensíveis em produção. Por isso:
+O site já lê imóveis e carrossel do Supabase, grava mensagens de contato, autentica contas de cliente/equipe com Supabase Auth e persiste favoritos e membros da equipe. O painel administrativo ainda mantém imóveis, clientes, negócios e parte do atendimento em armazenamento local do navegador. Ele exibe um aviso e **não deve ser usado com dados reais** até a migração restante dessas operações.
 
-- Uma mensagem enviada por um cliente em outro aparelho não chega ao painel.
-- A lista de equipe e os papéis não são compartilhados entre computadores.
-- As regras de permissão organizam o trabalho, mas **não são segurança real**, pois rodam no navegador.
-
-Para uso real, o próximo passo é ligar um serviço na internet (por exemplo Firebase ou Supabase), que oferece login com Google/Microsoft, banco de dados compartilhado e regras de acesso verificadas no servidor.
+A política em `docs/privacidade/politica-de-privacidade.html` continua sendo uma minuta: os dados da empresa, contato do encarregado, região e prazos de retenção precisam ser preenchidos e revisados com orientação jurídica. Não colete CPF, RG ou documentos reais até concluir a migração do painel, testar as políticas RLS e publicar a política final.
 
 As imagens padrão de alguns slides do carrossel são links externos e podem sair do ar. Para usar imagens próprias, configure-as em **Configurações > Design da página inicial**; utilize somente imagens que você tem direito de publicar.

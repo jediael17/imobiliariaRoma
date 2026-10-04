@@ -3,7 +3,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-p],[
  const session=SS();if(session&&session.via!=='senha'&&!me()){render();return}
  if(imageProcessing&&(b.dataset.p||['new','edit','save','cancel','rmph'].includes(a)))return toast('Aguarde o processamento das imagens antes de continuar.');
  if(designSlidesProcessing&&(b.dataset.p||a==='removeDesignSlide'||a==='saveDesignSlides'))return toast('Aguarde o processamento das imagens do carrossel.');
- if(['delu','deli','delm','approve-msg-delete','reject-msg-delete','release-msg','savecfg','savewa','savesso','exp','promo','tadd','tstatus','unarchive'].includes(a)&&!isAdm())return toast('Sem permissão para esta ação.');
+ if(['delu','deli','delm','approve-msg-delete','reject-msg-delete','release-msg','savewa','exp','promo','tadd','tstatus','unarchive'].includes(a)&&!isAdm())return toast('Sem permissão para esta ação.');
  if(b.dataset.p){page=b.dataset.p;if(page==='mine')flt.mine='atend';ed=null;edAdvertiserMessageId=null;hl=null;return render()}
  if(a==='vmsg'){e.preventDefault();const m=MS().find(x=>String(x.id)===String(id));page=m&&m.atendimento?'mine':'notif';hl=id;flt.mine='';return render()}
  if(a==='assume-msg'){const all=MS(),m=all.find(x=>String(x.id)===String(id));if(!m)return toast('Mensagem não encontrada.');if(m.atendimento)return toast('Esta mensagem já foi assumida por '+(m.atendimento.nome||'outro atendente')+'.');const u=me()||{};m.atendimento={id:currentUserKey(),email:u.email||'',nome:u.nome||u.email||'Atendente',em:new Date().toISOString()};m.status='atend';if(!DB.set('roma_msgs',all))return toast('Não foi possível salvar a atribuição.');toast('Mensagem adicionada à sua fila.');page='mine';flt.mine='atend';return render()}
@@ -19,7 +19,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-p],[
  if(a==='submit-msg-sale')return completeMessageSale(id);
  if(a==='menu'){document.querySelector('.shell').classList.toggle('open');return}
  if(a==='sp'){const p=$('p');p.type=p.type==='password'?'text':'password';b.textContent=p.type==='password'?'Mostrar':'Ocultar';return}
- if(a==='out'){try{sessionStorage.removeItem('roma_sess')}catch(x){}return render()}
+ if(a==='out'){const {error}=await requireSupabase().auth.signOut();if(error)return toast('Não foi possível encerrar a sessão: '+supabaseMessage(error));return}
  if(a==='new'){ed=blank();edOwner={nome:'',cpf:'',rg:'',telefone:'',email:''};edAdvertiserMessageId=null;imageProgress={visible:false,percent:0,label:''};return render()}
  if(a==='edit'){ed=JSON.parse(JSON.stringify(IM.find(i=>i.cod===id)));edAdvertiserMessageId=null;if(ed){if(!Array.isArray(ed.fotos))ed.fotos=[];if(typeof ed.video!=='string')ed.video='';edOwner=Object.assign({nome:'',cpf:'',rg:'',telefone:'',email:''},advertiserFor(id))}imageProgress={visible:false,percent:0,label:''};return render()}
  if(a==='cancel'){ed=null;edOwner={nome:'',cpf:'',rg:'',telefone:'',email:''};edAdvertiserMessageId=null;imageProgress={visible:false,percent:0,label:''};return render()}
@@ -64,12 +64,27 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-p],[
  if(a==='reg'){const m=MS().find(x=>String(x.id)===id);if(!m)return toast('Mensagem não encontrada.');if(!isAdm()&&messageOwnerId(m)!==currentUserKey())return toast('Esta mensagem não está na sua fila.');const g=k=>fv(m,k);ed=Object.assign(blank(),m.tipo==='vender'?{fin:g('Finalidade')==='Alugar'?'aluguel':'venda',tipo:g('Tipo do imóvel')||'Casa',valor:parseBRLInput(g('Valor pretendido')),cep:g('CEP').replace(/\D/g,''),logradouro:g('Rua / logradouro'),numero:g('Número'),complemento:g('Complemento'),uf:g('UF'),cidade:g('Cidade'),bairro:g('Bairro'),area:num(g('Área')),q:num(g('Quartos')),v:num(g('Vagas')),texto:g('Descrição do imóvel')}:{tipo:g('Tipo de imóvel')||'Casa',cidade:g('Cidade'),bairro:g('Bairros de interesse'),valor:parseBRLInput(g('Valor máximo'))});edOwner={nome:g('Nome completo'),cpf:g('CPF'),rg:g('RG'),telefone:g('WhatsApp'),email:g('E-mail')||g('Email')};edAdvertiserMessageId=m.tipo==='vender'?String(m.id):null;page='imv';return render()}
  if(a==='delm'){if(!isAdm())return toast('Colaboradores precisam solicitar a exclusão ao administrador.');const message=MS().find(m=>String(m.id)===String(id));if(!message)return toast('Mensagem não encontrada.');if(messageHasDeal(message))return toast('Não é possível excluir uma mensagem vinculada a uma venda.');if(confirm('Excluir esta mensagem?')){if(!DB.set('roma_msgs',MS().filter(m=>String(m.id)!==id)))return toast('Não foi possível excluir a mensagem.');const requests=messageDeletions().filter(n=>n.messageId!==String(id)||n.status!=='pendente');if(!DB.set('roma_msg_notificacoes',requests))return toast('Mensagem excluída, mas não foi possível atualizar as notificações.');render()}return}
  if(a==='delu'){if(confirm('Excluir este cliente e os dados de anunciante associados?')){const client=clientDirectory().find(person=>person.id===id||person.email===id);if(client&&deleteClientByEmail(client.email))render()}return}
- if(a==='sg')return ssoGoogle();if(a==='sm')return ssoMs();
- if(a==='tadd'){const em=$('t_email').value.trim().toLowerCase();if(!/^\S+@\S+\.\S+$/.test(em))return toast('Informe um e-mail válido.');const all=TEAM();if(all.some(x=>x.email.toLowerCase()===em))return toast('Esse e-mail já está cadastrado.');all.push({email:em,nome:$('t_nome').value.trim(),papel:$('t_papel').value,ativo:true,criado:new Date().toISOString()});if(!DB.set('roma_team',all))return toast('Não foi possível adicionar a pessoa.');toast('Pessoa adicionada.');return render()}
- if(a==='tstatus'){const all=TEAM(),member=all.find(x=>x.email.toLowerCase()===String(id).toLowerCase());if(!member)return toast('Colaborador não encontrado.');if(member.ativo!==false&&!confirm('Inativar o acesso de '+(member.nome||member.email)+'? Os dados e históricos serão mantidos.'))return;member.ativo=member.ativo===false;if(!DB.set('roma_team',all))return toast('Não foi possível atualizar o acesso do colaborador.');toast(member.ativo?'Acesso ativado.':'Acesso inativado.');return render()}
+ if(a==='sg')return ssoGoogle();
+ if(a==='tadd'){
+  const email=$('t_email').value.trim().toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(email))return toast('Informe um e-mail válido.');
+  const {error}=await requireSupabase().from('equipe').insert({
+   email,nome:$('t_nome').value.trim()||null,
+   papel:$('t_papel').value==='admin'?'admin':'colaborador'
+  });
+  if(error)return toast('Não foi possível adicionar a pessoa: '+supabaseMessage(error));
+  await refreshAdminTeam();toast('Pessoa adicionada.');return render();
+ }
+ if(a==='tstatus'){
+  const member=TEAM().find(person=>person.email.toLowerCase()===String(id).toLowerCase());
+  if(!member)return toast('Colaborador não encontrado.');
+  const nextActive=member.ativo===false;
+  if(!nextActive&&!confirm('Inativar o acesso de '+(member.nome||member.email)+'? Os dados e históricos serão mantidos.'))return;
+  const {error}=await requireSupabase().from('equipe').update({ativo:nextActive}).eq('email',member.email);
+  if(error)return toast('Não foi possível atualizar o acesso do colaborador: '+supabaseMessage(error));
+  await refreshAdminTeam();toast(nextActive?'Acesso ativado.':'Acesso inativado.');return render();
+ }
  if(a==='promo'){const u=US().find(x=>x.email===id);if(u){const all=TEAM();if(!all.some(x=>x.email.toLowerCase()===id.toLowerCase())){all.push({email:u.email.toLowerCase(),nome:u.name,papel:'colab',ativo:true,criado:new Date().toISOString()});if(!DB.set('roma_team',all))return toast('Não foi possível adicionar o colaborador.');toast(u.name+' agora é colaborador(a).')}}return render()}
- if(a==='savesso'){CFG.googleId=$('c_gid').value.trim();CFG.msId=$('c_mid').value.trim();CFG.msTenant=$('c_mt').value.trim()||'common';DB.set('roma_cfg',CFG);toast('Login único salvo.');return}
- if(a==='savecfg'){if($('c_user').value.trim())CFG.usuario=$('c_user').value.trim();if($('c_senha').value)CFG.senha=$('c_senha').value;DB.set('roma_cfg',CFG);toast('Acesso atualizado.');return}
  if(a==='savewa'){const w=num($('c_whats').value);if(!w)return toast('Informe um número válido.');CFG.whats=String(w);DB.set('roma_cfg',CFG);toast('Número salvo.');return}
  if(a==='saveDesignSlides')return saveDesignSlides();
  if(a==='removeDesignSlide'){if(!isAdm())return toast('Sem permissão para alterar o carrossel.');return removeDesignSlide(+id)}

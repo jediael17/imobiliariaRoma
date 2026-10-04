@@ -1,15 +1,9 @@
 /* Base do painel: constantes, dados, formatação e funções de apoio. */
 const $=id=>document.getElementById(id),F=n=>(+n||0).toLocaleString('pt-BR'),SITE='../index.html';
-const CFG=Object.assign({usuario:'admin',senha:'roma2026',whats:ROMA_CONFIG.whatsapp,googleId:'',msId:'',msTenant:'common'},DB.get('roma_cfg',{}));
-/* Se nada foi salvo no painel, valem os IDs do config.js (raiz do projeto). */
-if(!CFG.googleId)CFG.googleId=ROMA_CONFIG.googleClientId;
-if(!CFG.msId)CFG.msId=ROMA_CONFIG.microsoftClientId;
-if(!CFG.msTenant)CFG.msTenant=ROMA_CONFIG.microsoftTenant||'common';
-const storedProperties=DB.get('roma_imoveis',[]);
-let IM=removeDemoProperties(storedProperties);
-if(Array.isArray(storedProperties)&&IM.length!==storedProperties.length&&!DB.set('roma_imoveis',IM))console.error('Não foi possível remover os imóveis demonstrativos salvos no navegador.');
-let ANUNCIANTES=DB.get('roma_anunciantes',[]);
-if(!Array.isArray(ANUNCIANTES))ANUNCIANTES=[];
+const savedConfig=DB.get('roma_cfg',{});
+const CFG={usuario:'Acesso Supabase',whats:String(savedConfig.whats||ROMA_CONFIG.whatsapp)};
+let IM=[];
+let ANUNCIANTES=[];
 let edOwner={nome:'',cpf:'',rg:'',telefone:'',email:''};
 let edAdvertiserMessageId=null;
 const MS=()=>DB.get('roma_msgs',[]),US=()=>DB.get('roma_users',[]);
@@ -60,13 +54,18 @@ const waTo=(p,t)=>{let d=String(p||'').replace(/\D/g,'');if(d&&d.length<=11)d='5
 const sOf=i=>i.st||'disp',bd=(c,t)=>'<span class="bd '+c+'">'+t+'</span>';
 const sBd=i=>bd(sOf(i)==='disp'?'ok':sOf(i)==='vendido'?'sold':'rent',STL[sOf(i)]);
 let page='dash',ed=null,hl=null,flt={q:'',s:'',f:'',o:'',t:'',m:'',mine:''},imageProcessing=false,imageProgress={visible:false,percent:0,label:''},designSlides=[],designSlidesLoaded=false,designSlidesLoading=false,designSlidesError=false,designSlidesProcessing=false,designSlidesProgress={percent:0,label:''};
-const saveIM=()=>{if(!DB.set('roma_imoveis',IM)){toast('Armazenamento cheio. Use menos fotos ou fotos menores.');return false}return true};
+const saveIM=async()=>{
+ for(const property of IM)await persistAdminPropertyState(property);
+ return true
+};
 const advertiserFor=cod=>ANUNCIANTES.find(x=>x.cod===cod)||{nome:'',cpf:'',rg:'',telefone:'',email:''};
-const savePropertyAndAdvertiser=cod=>{
- const previous=ANUNCIANTES,next=ANUNCIANTES.filter(x=>x.cod!==cod).concat({cod,...edOwner,data:advertiserFor(cod).data||new Date().toISOString()});
- if(!DB.set('roma_anunciantes',next)){toast('Não foi possível salvar os dados privados do anunciante.');return false}
- if(!saveIM()){if(!DB.set('roma_anunciantes',previous))console.error('Não foi possível reverter os dados do anunciante após falha ao salvar o imóvel.');return false}
- ANUNCIANTES=next;return true
+const savePropertyAndAdvertiser=async(property)=>{
+ const saved=await saveAdminProperty(property,edOwner);
+ const index=IM.findIndex(item=>item===property||item.cod===property.cod);
+ if(index<0)IM.unshift(saved);else IM[index]=saved;
+ ed=Object.assign({},saved);
+ ANUNCIANTES=ANUNCIANTES.filter(item=>item.cod!==saved.cod).concat(Object.assign({data:new Date().toISOString()},edOwner,{cod:saved.cod}));
+ return true;
 };
 const deleteClientByEmail=email=>{
  const key=String(email||'').toLowerCase(),previousUsers=US(),nextUsers=previousUsers.filter(user=>String(user.email||'').toLowerCase()!==key),previousAdvertisers=ANUNCIANTES,nextAdvertisers=previousAdvertisers.filter(advertiser=>String(advertiser.email||'').toLowerCase()!==key),previousAdminClients=ADMIN_CLIENTS(),nextAdminClients=previousAdminClients.filter(client=>String(client.email||'').toLowerCase()!==key);
@@ -75,16 +74,15 @@ const deleteClientByEmail=email=>{
  if(!DB.set(ADMIN_CLIENTS_KEY,nextAdminClients)){if(!DB.set('roma_anunciantes',previousAdvertisers))console.error('Não foi possível reverter a exclusão dos dados do anunciante.');if(!DB.set('roma_users',previousUsers))console.error('Não foi possível reverter a exclusão do cliente no cadastro de compradores.');toast('Não foi possível excluir os dados pessoais do cliente.');return false}
  ANUNCIANTES=nextAdvertisers;return true
 };
-const deletePropertyAndAdvertiser=cod=>{
- const previous=ANUNCIANTES,next=previous.filter(x=>x.cod!==cod),properties=IM;
- if(!DB.set('roma_anunciantes',next)){toast('Não foi possível remover os dados privados do anunciante.');return false}
- IM=IM.filter(x=>x.cod!==cod);
- if(!saveIM()){IM=properties;if(!DB.set('roma_anunciantes',previous))console.error('Não foi possível reverter os dados do anunciante após falha ao excluir o imóvel.');return false}
- ANUNCIANTES=next;return true
+const deletePropertyAndAdvertiser=async cod=>{
+ const property=IM.find(item=>item.cod===cod);
+ await deleteAdminProperty(property);
+ IM=IM.filter(item=>item.cod!==cod);
+ ANUNCIANTES=ANUNCIANTES.filter(item=>item.cod!==cod);
+ return true;
 };
 const toast=t=>{const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2800)};
 const updateImageProgress=(active,percent,label)=>{imageProcessing=active;imageProgress={visible:active||!!label,percent:Math.max(0,Math.min(100,percent||0)),label:label||''};const bar=$('imageProgressBar'),text=$('imageProgressText'),box=$('imageProgress');if(bar)bar.value=imageProgress.percent;if(text)text.textContent=imageProgress.label;if(box)box.hidden=!imageProgress.visible;const save=document.querySelector('[data-a="save"]'),input=$('e_fotos'),cancel=document.querySelector('[data-a="cancel"]');if(save)save.disabled=active;if(input)input.disabled=active;if(cancel)cancel.disabled=active;document.querySelectorAll('.ph button').forEach(button=>button.disabled=active)};
-if(archiveExpiredProperties(IM)&&!DB.set('roma_imoveis',IM))console.error('Não foi possível salvar o arquivamento automático dos imóveis.');
 const blank=()=>({titulo:'',fin:'venda',tipo:'Casa',st:'disp',cep:'',logradouro:'',numero:'',complemento:'',uf:'',cidade:'',bairro:'',q:0,s:0,b:1,v:1,area:0,valor:0,art:'casa1',texto:'',fotos:[]});
 const nextCod=()=>{
  const year=new Date().getFullYear(),prefix='RM'+year,lastSequence=IM.reduce((max,property)=>{const match=String(property.cod||'').match(/^RM-?(\d{4})-?(\d+)$/);return match&&Number(match[1])===year?Math.max(max,Number(match[2])):max},0);
