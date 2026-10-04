@@ -55,7 +55,8 @@ function openAuth(tab) {
   lastF = document.activeElement;
   setAu(tab || 'login');
   byId('authPolicyOk').checked = false;
-  byId('demoNote').hidden = true;
+  const demoNote = byId('demoNote');
+  if (demoNote) demoNote.hidden = true;
   authm.hidden = false;
   document.body.style.overflow = 'hidden';
   requestAnimationFrame(() => authm.classList.add('show'));
@@ -215,11 +216,13 @@ if (supabaseClient) {
   });
 }
 
-loginBtn.onclick = () => {
+document.addEventListener('click', event => {
+  if (!event.target.closest('#loginBtn')) return;
+  event.preventDefault();
   menu.classList.remove('open');
   burger.setAttribute('aria-expanded', 'false');
   openAuth('login');
-};
+}, true);
 document.querySelectorAll('#authmodal .atabs button').forEach(button => {
   button.onclick = () => setAu(button.dataset.au);
 });

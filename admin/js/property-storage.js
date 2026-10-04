@@ -43,7 +43,7 @@ document.addEventListener('click', async event => {
   if(action==='unarchive'){
    const property=IM.find(item=>item.cod===id);
    if(!property||!property.arquivado)return;
-   if(property.st!=='disp'&&!confirm('Este imóvel está '+(property.st==='alugado'?'alugado':'vendido')+'. Reativá-lo também removerá o registro do negócio. Continuar?'))return;
+   if(property.st!=='disp'&&!await confirmModal('Este imóvel está '+(property.st==='alugado'?'alugado':'vendido')+'. Reativá-lo também removerá o registro do negócio. Continuar?'))return;
    property.arquivado=null;
    property._archiveOwnerId=null;
    if(property.st!=='disp'){property.st='disp';property.fech=null}
@@ -54,7 +54,7 @@ document.addEventListener('click', async event => {
   }
 
   if(!isAdm())return toast('Sem permissão para excluir imóveis.');
-  if(!confirm('Excluir este imóvel e as fotos associadas?'))return;
+  if(!await confirmModal('Excluir este imóvel e as fotos associadas?'))return;
   await deletePropertyAndAdvertiser(id);
   toast('Imóvel e fotos excluídos do Supabase.');
   render();

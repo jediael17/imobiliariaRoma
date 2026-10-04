@@ -11,13 +11,18 @@ const promoBtn = user => {
 function pgTeam() {
   const rows = TEAM().map(member => {
     const active = teamMemberIsActive(member);
+    const primary = String(member.email).toLowerCase() === PRIMARY_ADMIN_EMAIL;
     return '<tr><td><b>' + esc(member.nome || '—') + '</b><small>' + esc(member.email) + '</small></td>'
-      + '<td>Google</td><td><select data-trole="' + esc(member.email) + '" aria-label="Papel" style="width:auto">'
+      + '<td>Google</td><td><select data-trole="' + esc(member.email) + '" aria-label="Papel" style="width:auto"' + (primary ? ' disabled title="Papel protegido do administrador principal"' : '') + '>'
       + opt(Object.entries(PAPEL), member.papel) + '</select></td><td>'
       + (member.ultimo ? dtt(member.ultimo) : 'Nunca entrou') + '</td><td>'
       + bd(active ? 'ok' : 'sold', active ? 'Ativo' : 'Inativo') + '</td><td>'
-      + '<button class="btn sm' + (active ? ' danger' : '') + '" data-a="tstatus" data-id="' + esc(member.email) + '">'
-      + (active ? 'Inativar' : 'Ativar') + '</button></td></tr>';
+      + (primary
+        ? '<button class="btn sm" type="button" disabled title="O administrador principal não pode ser inativado">Administrador principal</button>'
+        : '<button class="btn sm' + (active ? ' danger' : '') + '" data-a="tstatus" data-id="' + esc(member.email) + '">'
+          + (active ? 'Inativar' : 'Ativar') + '</button>'
+          + (isPrimaryAdmin() ? '<button class="btn sm danger" data-a="tdelete" data-id="' + esc(member.email) + '">Excluir</button>' : ''))
+      + '</td></tr>';
   }).join('');
 
   return '<div class="card"><h3>Adicionar pessoa</h3>'

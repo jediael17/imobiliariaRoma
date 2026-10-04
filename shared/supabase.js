@@ -5,11 +5,16 @@ const supabaseClient = (() => {
     console.error('Supabase SDK failed to load.');
     return null;
   }
+  // The public site and admin panel share an origin and browser profile. Give
+  // the admin its own auth storage so its team-only signOut/session cannot
+  // interfere with a customer login in another open tab.
+  const authStorage = document.getElementById('app') ? { storageKey: 'roma-admin-auth' } : {};
   return sdk.createClient(ROMA_CONFIG.supabaseUrl, ROMA_CONFIG.supabaseKey, {
     auth: {
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      persistSession: true
+      persistSession: true,
+      ...authStorage
     }
   });
 })();

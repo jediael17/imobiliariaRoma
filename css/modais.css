@@ -169,16 +169,19 @@
 }
 
 .chk {
-  display:flex;
-  gap:10px;
-  align-items:flex-start;
+  display:block;
+  position:relative;
+  padding-left:26px;
   font-size:.9rem;
   color:var(--marfim2);
 }
 
-.mform input[type=checkbox] {
+.chk input[type=checkbox] {
   width:auto;
-  margin-top:4px;
+  position:absolute;
+  left:0;
+  top:3px;
+  margin:0;
   accent-color:var(--ouro);
 }
 

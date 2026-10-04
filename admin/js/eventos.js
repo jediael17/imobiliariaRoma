@@ -1,7 +1,7 @@
 /* Campos, filtros, teclado e atualização entre abas. */
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='q'){flt.q=t.value;drawImv()}});
 document.addEventListener('change',async e=>{const t=e.target;
- if(t.dataset.trole){if(!isAdm())return;const member=TEAM().find(person=>person.email.toLowerCase()===t.dataset.trole.toLowerCase());if(member){const {error}=await requireSupabase().from('equipe').update({papel:t.value==='admin'?'admin':'colaborador'}).eq('email',member.email);if(error){toast('Não foi possível atualizar o papel: '+supabaseMessage(error));return}await refreshAdminTeam();toast('Papel atualizado.');render()}}else if(t.id==='fS'){flt.s=t.value;drawImv()}else if(t.id==='fF'){flt.f=t.value;drawImv()}
+ if(t.dataset.trole){if(!isAdm())return;const member=TEAM().find(person=>person.email.toLowerCase()===t.dataset.trole.toLowerCase());if(member){if(member.email.toLowerCase()===PRIMARY_ADMIN_EMAIL)return toast('O papel do administrador principal não pode ser alterado.');const {error}=await requireSupabase().from('equipe').update({papel:t.value==='admin'?'admin':'colaborador'}).eq('email',member.email);if(error){toast('Não foi possível atualizar o papel: '+supabaseMessage(error));return}await refreshAdminTeam();toast('Papel atualizado.');render()}}else if(t.id==='fS'){flt.s=t.value;drawImv()}else if(t.id==='fF'){flt.f=t.value;drawImv()}
  else if(t.id==='fO'){flt.o=t.value;drawNeg()}else if(t.id==='fT'){flt.t=t.value;drawNeg()}
  else if(t.id==='fM'){flt.m=t.value;render()}
  else if(t.id==='fMine'){flt.mine=t.value;render()}

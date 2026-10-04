@@ -80,8 +80,9 @@ function persistAdminStateKey(key, next) {
           observacao_encerramento: message.desistencia && message.desistencia.motivo || null,
           concluida_em: message.status === 'ok' ? message.desistencia && message.desistencia.em || new Date().toISOString() : null,
           tag: message.anuncioCriado && message.anuncioCriado.cod || null };
-        const result = await client.from('mensagens').update(row).eq('id', message.id);
+        const result = await client.from('mensagens').update(row).eq('id', message.id).select('id').maybeSingle();
         if (result.error) throw result.error;
+        if (!result.data) throw new Error('A mensagem não foi atualizada no banco. Verifique o acesso da equipe e tente novamente.');
       }
       const removed = [...oldIds].filter(id => !nextIds.has(id));
       if (removed.length) { const result = await client.from('mensagens').delete().in('id', removed); if (result.error) throw result.error; }
