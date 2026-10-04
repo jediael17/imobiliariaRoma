@@ -101,6 +101,10 @@
   margin-bottom:20px;
 }
 
+.mtabs[hidden] {
+  display:none;
+}
+
 .mtabs button {
   flex:1;
   border:0;

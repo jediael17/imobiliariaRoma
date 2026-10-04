@@ -140,7 +140,8 @@
 
 .content {
   padding:28px;
-  max-width:1240px;
+  width:100%;
+  max-width:1600px;
 }
 
 .scrim {

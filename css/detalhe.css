@@ -29,21 +29,156 @@
 }
 
 .gmain {
+  position:relative;
   aspect-ratio:16/10;
   border-radius:28px;
   background-size:cover;
   background-position:center;
   border:1px solid rgba(184,147,90,.3);
+  overflow:hidden;
 }
 
-.gth {
+.gmain[role="button"] {
+  cursor:zoom-in;
+}
+
+.gmain-play {
   display:grid;
-  grid-template-columns:repeat(4,1fr);
+  place-items:center;
+  width:64px;
+  height:46px;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  border-radius:14px;
+  background:#d71920;
+  color:#fff;
+  font-size:1.5rem;
+}
+
+.gmain[role="button"]:focus-visible {
+  outline:3px solid var(--ouro-claro);
+  outline-offset:3px;
+}
+
+.gmain iframe {
+  display:block;
+  width:100%;
+  height:100%;
+  border:0;
+}
+
+.gallery-lightbox {
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:grid;
+  grid-template-columns:56px minmax(0,1fr) 56px;
+  grid-template-rows:minmax(0,1fr) auto;
+  align-items:center;
+  justify-items:center;
+  gap:14px;
+  padding:56px 28px 30px;
+  background:rgba(8,7,6,.94);
+}
+
+.gallery-lightbox[hidden] {
+  display:none;
+}
+
+.gallery-lightbox-stage {
+  grid-column:2;
+  grid-row:1;
+  display:grid;
+  place-items:center;
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+}
+
+.gallery-lightbox-stage img,
+.gallery-lightbox-stage iframe {
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:1600px;
+  max-height:calc(100vh - 140px);
+  object-fit:contain;
+  border:0;
+}
+
+.gallery-lightbox-stage iframe {
+  aspect-ratio:16/9;
+}
+
+.gallery-arrow {
+  width:48px;
+  height:48px;
+}
+
+#galleryPrev {
+  grid-column:1;
+  grid-row:1;
+}
+
+#galleryNext {
+  grid-column:3;
+  grid-row:1;
+}
+
+.gallery-close {
+  position:absolute;
+  top:16px;
+  right:20px;
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  padding:0;
+  border:1px solid rgba(184,147,90,.55);
+  border-radius:50%;
+  background:var(--grafite2);
+  color:var(--ouro-claro);
+  font:400 2rem/1 Arial,sans-serif;
+  cursor:pointer;
+}
+
+.gallery-close:hover {
+  background:var(--ouro);
+  color:var(--grafite);
+}
+
+.gallery-counter {
+  grid-column:2;
+  grid-row:2;
+  color:var(--marfim);
+  font-size:.9rem;
+}
+
+body.gallery-open {
+  overflow:hidden;
+}
+
+.gthumbs {
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) 42px;
   gap:10px;
+  align-items:center;
   margin-top:10px;
 }
 
+.gth {
+  display:flex;
+  gap:10px;
+  min-width:0;
+  overflow:hidden;
+  scroll-behavior:smooth;
+}
+
 .gth button {
+  flex:0 0 calc((100% - 30px) / 4);
   aspect-ratio:16/10;
   border-radius:16px;
   border:2px solid transparent;
@@ -57,6 +192,46 @@
 
 .gth button.on {
   border-color:var(--ouro);
+  opacity:1;
+}
+
+.gth-arrow {
+  display:grid;
+  place-items:center;
+  padding:0;
+  width:42px;
+  height:42px;
+  border:1px solid rgba(184,147,90,.4);
+  border-radius:50%;
+  background:var(--grafite2);
+  color:var(--ouro-claro);
+  font:400 1.8rem/1 Arial,sans-serif;
+  text-align:center;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.gth-arrow:hover {
+  background:var(--ouro);
+  color:var(--grafite);
+}
+
+.gth button.video-thumb {
+  position:relative;
+}
+
+.gth button.video-thumb span {
+  position:absolute;
+  inset:50% auto auto 50%;
+  display:grid;
+  place-items:center;
+  width:38px;
+  height:28px;
+  transform:translate(-50%,-50%);
+  border-radius:8px;
+  background:#d71920;
+  color:#fff;
+  font-size:1rem;
   opacity:1;
 }
 
@@ -212,6 +387,43 @@
   }
   .det {
     padding-top:110px;
+  }
+}
+
+@media (max-width:520px) {
+  .gallery-lightbox {
+    grid-template-columns:36px minmax(0,1fr) 36px;
+    gap:6px;
+    padding:60px 10px 22px;
+  }
+  .gallery-lightbox-stage img,
+  .gallery-lightbox-stage iframe {
+    max-height:calc(100vh - 120px);
+  }
+  .gallery-arrow {
+    width:36px;
+    height:36px;
+  }
+  .gallery-close {
+    top:10px;
+    right:10px;
+    width:38px;
+    height:38px;
+  }
+  .gthumbs {
+    grid-template-columns:34px minmax(0,1fr) 34px;
+    gap:6px;
+  }
+  .gth-arrow {
+    width:34px;
+    height:34px;
+  }
+  .gth {
+    gap:6px;
+  }
+  .gth button {
+    flex-basis:calc((100% - 18px) / 4);
+    border-radius:10px;
   }
 }
 

@@ -1,9 +1,10 @@
 /* Login e cadastro de clientes com Google. */
 let USER=DB.get('roma_user',null);
 const byId=id=>document.getElementById(id),authm=byId('authmodal'),loginBtn=byId('loginBtn'),userLi=byId('userLi');
+byId('cadWhats').dataset.mask='phone';byId('cadWhats').placeholder='(31) 9 9999-9999 (opcional)';applyInputMasks(authm);
 const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function prefillUser(){if(!USER)return;const n=mform.querySelector('input[aria-label="Nome completo"]'),w=mform.querySelector('input[aria-label="WhatsApp"]'),m=mform.querySelector('input[aria-label="E-mail"]');if(n&&!n.value)n.value=USER.name||'';if(m&&!m.value)m.value=USER.email||'';if(w&&!w.value&&USER.whats)w.value=USER.whats}
-function renderUser(){loginBtn.parentElement.hidden=!!USER;userLi.hidden=!USER;if(USER){const av=USER.picture?'<img class="uav" src="'+esc(USER.picture)+'" alt="" referrerpolicy="no-referrer">':'<span class="uav">'+esc((USER.name||'?')[0].toUpperCase())+'</span>';userLi.querySelector('button').innerHTML=av+' '+esc((USER.name||'Conta').split(' ')[0])+' ▾'}}
+function prefillUser(){if(!USER)return;const n=mform.querySelector('input[aria-label="Nome completo"]'),w=mform.querySelector('input[aria-label="WhatsApp"]'),m=mform.querySelector('input[aria-label="E-mail"]');if(n&&!n.value)n.value=USER.name||'';if(m&&!m.value)m.value=USER.email||'';if(w&&!w.value&&USER.whats){w.value=USER.whats;applyInputMasks(mform)}}
+function renderUser(){loginBtn.parentElement.hidden=!!USER;userLi.hidden=!USER;if(USER){const av=USER.picture?'<img class="uav" src="'+esc(USER.picture)+'" alt="" referrerpolicy="no-referrer">':'<span class="uav">'+esc((USER.name||'?')[0].toUpperCase())+'</span>';userLi.querySelector('button').innerHTML=av+' '+esc((USER.name||'Conta').split(' ')[0])+' ▾'}if(typeof apply==='function')apply()}
 function setAu(t){document.querySelectorAll('#authmodal .atabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.au===t));byId('pLogin').hidden=t!=='login';byId('pCad').hidden=t!=='cad';byId('authtitle').textContent=t==='cad'?'Criar sua conta':'Acesse sua conta';byId('authmsg').hidden=true}
 function openAuth(t){lastF=document.activeElement;setAu(t||'login');byId('demoNote').hidden=!!GOOGLE_CLIENT_ID;authm.hidden=false;document.body.style.overflow='hidden';requestAnimationFrame(()=>authm.classList.add('show'))}
 function closeAuth(){authm.classList.remove('show');setTimeout(()=>{authm.hidden=true},250);document.body.style.overflow=''}

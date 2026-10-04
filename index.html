@@ -5,6 +5,7 @@
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ROMA Negócios Imobiliários | Patrimônio que atravessa gerações</title>
+<link rel="icon" type="image/png" href="img/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/base.css">
@@ -68,8 +69,7 @@
   <div class="head"><h2>Imóveis selecionados</h2><p>Uma curadoria de oportunidades com potencial de permanência e valorização.</p></div>
   <div class="resbar"><span id="count" role="status" aria-live="polite"></span><button type="button" class="clear" id="clearF">Limpar filtros</button></div>
   <div class="grid" id="grid"></div>
-  <p id="empty" hidden>Nenhum imóvel encontrado com esses filtros. Tente ampliar a busca ou limpe os filtros.</p>
-  <p style="margin-top:28px;font-size:.85rem;opacity:.6">Imóveis, valores e imagens ilustrativas de exemplo. Substitua pelo seu portfólio real.</p>
+  <p id="empty" hidden>Nenhum imóvel cadastrado no momento. Novas oportunidades aparecerão aqui assim que forem cadastradas.</p>
  </div>
 </section>
 
@@ -102,7 +102,7 @@
    <p style="color:var(--ouro-claro)">contato@romaimobiliaria.com.br<br>(31) 00000-0000<br>Ibirité, Minas Gerais</p></div>
   <div class="paths">
    <button type="button" class="path" data-open="comprar"><b>Quero comprar</b><span>Conte o que você procura.</span></button>
-   <button type="button" class="path" data-open="vender"><b>Quero vender</b><span>Anuncie seu imóvel no site da ROMA.</span></button>
+   <button type="button" class="path" data-open="vender"><b>Quero Anunciar</b><span>Anuncie seu imóvel no site da ROMA.</span></button>
   </div>
  </div>
 </section>
@@ -114,24 +114,27 @@
  <div class="mcard">
   <button type="button" class="mclose" id="mclose" aria-label="Fechar">×</button>
   <div class="mscroll"><h2 id="mtitle">Solicitação de compra</h2>
-  <div class="mtabs" role="tablist"><button type="button" role="tab" data-m="comprar" aria-selected="true">Quero comprar</button><button type="button" role="tab" data-m="vender" aria-selected="false">Quero vender</button></div>
+  <div class="mtabs" role="tablist"><button type="button" role="tab" data-m="comprar" aria-selected="true">Quero comprar</button><button type="button" role="tab" data-m="vender" aria-selected="false">Quero Anunciar</button></div>
   <form class="mform" id="mform">
-   <div class="row"><input required name="nome" placeholder="Nome completo" aria-label="Nome completo"><input required type="tel" name="whatsapp" placeholder="WhatsApp" aria-label="WhatsApp"></div>
+   <div class="row"><input required name="nome" placeholder="Nome completo" aria-label="Nome completo"><input required type="tel" name="whatsapp" placeholder="(31) 9 9999-9999" aria-label="WhatsApp" data-mask="phone"></div>
    <input type="email" name="email" placeholder="E-mail" aria-label="E-mail">
    <fieldset id="p-comprar">
     <div class="row"><select aria-label="Tipo de imóvel"><option value="">Tipo de imóvel</option><option>Apartamento</option><option>Casa</option><option>Cobertura</option><option>Terreno</option><option>Comercial</option></select><input placeholder="Cidade" aria-label="Cidade"></div>
     <input placeholder="Bairros de interesse" aria-label="Bairros de interesse">
     <div class="row3"><select aria-label="Dormitórios"><option value="">Dormitórios</option><option>1+</option><option>2+</option><option>3+</option><option>4+</option></select><select aria-label="Banheiros"><option value="">Banheiros</option><option>1+</option><option>2+</option><option>3+</option></select><select aria-label="Vagas"><option value="">Vagas</option><option>1+</option><option>2+</option><option>3+</option></select></div>
-    <div class="row"><input inputmode="numeric" placeholder="Valor mínimo (R$)" aria-label="Valor mínimo"><input inputmode="numeric" placeholder="Valor máximo (R$)" aria-label="Valor máximo"></div>
+    <div class="row"><input inputmode="decimal" placeholder="Valor mínimo (R$)" aria-label="Valor mínimo" data-mask="brl"><input inputmode="decimal" placeholder="Valor máximo (R$)" aria-label="Valor máximo" data-mask="brl"></div>
     <div class="row"><select aria-label="Forma de pagamento"><option value="">Forma de pagamento</option><option>Financiamento</option><option>À vista</option><option>FGTS + financiamento</option><option>Permuta</option></select><select aria-label="Prazo para comprar"><option value="">Prazo para comprar</option><option>Imediato</option><option>Até 3 meses</option><option>3 a 6 meses</option><option>Só pesquisando</option></select></div>
     <textarea rows="3" placeholder="Observações (andar, área de lazer, perto de escola...)" aria-label="Observações"></textarea>
     <label class="chk"><input type="checkbox" required> Aceito ser contatado pela ROMA sobre esta solicitação.</label>
    </fieldset>
    <fieldset id="p-vender" hidden disabled>
     <div class="seg" role="radiogroup" aria-label="Finalidade"><label><input type="radio" name="fin" value="vender" checked><span>Vender</span></label><label><input type="radio" name="fin" value="alugar"><span>Alugar</span></label></div>
-    <div class="row"><select aria-label="Tipo do imóvel"><option value="">Tipo do imóvel</option><option>Apartamento</option><option>Casa</option><option>Cobertura</option><option>Terreno</option><option>Comercial</option></select><input required id="sellval" inputmode="numeric" placeholder="Valor pretendido (R$)" aria-label="Valor pretendido"></div>
-    <input required placeholder="Endereço (rua e número)" aria-label="Endereço">
-    <div class="row"><input required placeholder="Bairro" aria-label="Bairro"><input required placeholder="Cidade" aria-label="Cidade"></div>
+    <div class="row"><select aria-label="Tipo do imóvel"><option value="">Tipo do imóvel</option><option>Apartamento</option><option>Casa</option><option>Cobertura</option><option>Terreno</option><option>Comercial</option></select><input required id="sellval" inputmode="decimal" placeholder="Valor pretendido (R$)" aria-label="Valor pretendido" data-mask="brl"></div>
+    <div class="row"><input required inputmode="numeric" placeholder="CEP" aria-label="CEP" data-mask="cep" data-cep-lookup data-cep-field="cep"><input placeholder="UF" aria-label="UF" maxlength="2" data-cep-field="uf"></div>
+    <p data-cep-status role="status" aria-live="polite"></p>
+    <div class="row"><input required placeholder="Rua / logradouro" aria-label="Rua / logradouro" data-cep-field="logradouro"><input required placeholder="Número" aria-label="Número" data-cep-field="numero"></div>
+    <input placeholder="Complemento" aria-label="Complemento" data-cep-field="complemento">
+    <div class="row"><input required placeholder="Bairro" aria-label="Bairro" data-cep-field="bairro"><input required placeholder="Cidade" aria-label="Cidade" data-cep-field="cidade"></div>
     <div class="row3"><input inputmode="numeric" placeholder="Área (m²)" aria-label="Área"><input inputmode="numeric" placeholder="Quartos" aria-label="Quartos"><input inputmode="numeric" placeholder="Vagas" aria-label="Vagas"></div>
     <select aria-label="Situação do imóvel"><option value="">Situação do imóvel</option><option>Desocupado</option><option>Ocupado pelo proprietário</option><option>Alugado</option></select>
     <textarea rows="3" placeholder="Descreva o imóvel (diferenciais, estado, condomínio...)" aria-label="Descrição do imóvel"></textarea>
@@ -159,7 +162,11 @@
   </div></div></div>
 <script src="config.js"></script>
 <script src="shared/storage.js"></script>
-<script src="shared/imoveis-exemplo.js"></script>
+<script src="shared/design-slides.js"></script>
+<script src="shared/masks.js"></script>
+<script src="shared/youtube.js"></script>
+<script src="shared/viacep.js"></script>
+<script src="shared/lifecycle.js"></script>
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/icones.js"></script>
