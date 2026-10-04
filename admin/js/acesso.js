@@ -56,6 +56,8 @@ async function applyAdminSession(session) {
     await requireSupabase().auth.signOut();
     throw new Error('Este e-mail não tem acesso ativo ao painel. Peça a um administrador para cadastrá-lo na equipe.');
   }
+  await loadAdminState();
+  CFG.whats = adminState.config.whats || ROMA_CONFIG.whatsapp;
   const adminData = await loadAdminProperties();
   IM = adminData.properties;
   ANUNCIANTES = adminData.advertisers;

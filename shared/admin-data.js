@@ -32,6 +32,8 @@ const adminPropertyFromRow = (row, photos) => ({
   fotos: photos.map(photo => requireSupabase().storage.from('imoveis').getPublicUrl(photo.caminho).data.publicUrl),
   art: 'casa1'
 });
+let adminPropertyBaseline = new Map();
+const adminPropertySnapshot = property => JSON.stringify(property);
 
 async function loadAdminProperties() {
   const client = requireSupabase();
@@ -49,6 +51,48 @@ async function loadAdminProperties() {
     photosByProperty.set(photo.imovel_id, list);
   });
   const rows = properties || [];
+  const { data: deals, error: dealsError } = await client.from('negocios').select('*');
+  if (dealsError) throw dealsError;
+  const dealPropertyIds = (deals || []).map(deal => deal.imovel_id);
+  const documentsResult = dealPropertyIds.length
+    ? await client.from('negocios_documentos').select('id,negocio_id,caminho,nome_original,mime,tamanho').in('negocio_id', (deals || []).map(deal => deal.id)).order('criado_em')
+    : { data: [], error: null };
+  if (documentsResult.error) throw documentsResult.error;
+  const clientsById = new Map();
+  const dealClientIds = [...new Set((deals || []).map(deal => deal.cliente_id).filter(Boolean))];
+  if (dealClientIds.length) {
+    const result = await client.from('clientes').select('id,nome,email,telefone').in('id', dealClientIds);
+    if (result.error) throw result.error;
+    for (const customer of result.data || []) {
+      const personalResult = await client.rpc('ver_dados_pessoais', { _cliente: customer.id });
+      if (personalResult.error) throw personalResult.error;
+      clientsById.set(customer.id, Object.assign({}, customer, personalResult.data || {}));
+    }
+  }
+  const dealsByProperty = new Map();
+  for (const deal of deals || []) {
+    const property = rows.find(item => item.id === deal.imovel_id);
+    if (!property) continue;
+    const owner = TEAM().find(person => person.id === deal.responsavel_id);
+    const buyer = clientsById.get(deal.cliente_id) || {};
+    const documents = await Promise.all((documentsResult.data || []).filter(doc => doc.negocio_id === deal.id).map(async doc => {
+      const signed = await client.storage.from('documentos').createSignedUrl(doc.caminho, 3600);
+      if (signed.error) throw signed.error;
+      const extension = String(doc.nome_original || '').split('.').pop().toLowerCase();
+      return { id: doc.id, path: doc.caminho, nome: doc.nome_original, tipo: doc.mime,
+        formato: extension, dados: signed.data.signedUrl };
+    }));
+    dealsByProperty.set(property.id, Object.assign({}, property.fechado_em ? { data: property.fechado_em.slice(0, 10) } : {}, {
+      _dealId: deal.id, _clientId: deal.cliente_id, cliente: buyer.nome || '', clienteEmail: buyer.email || '',
+      tel: buyer.telefone || '', cpf: buyer.cpf || '', rg: buyer.rg || '', email: buyer.email || '',
+      origem: deal.origem === 'whatsapp' ? 'whats' : deal.origem,
+      msgId: deal.mensagem_id || '', data: deal.data_negocio, registradoEm: deal.criado_em,
+      valor: Number(deal.valor) || 0, pagamento: deal.forma_pagamento || (deal.financiado ? 'Financiamento' : 'À vista'),
+      entrada: Number(deal.entrada) || 0, parcelasQuantidade: deal.parcelas || 0, parcelaValor: Number(deal.valor_parcela) || 0,
+      obs: deal.observacoes || '', por: owner && owner.nome || '', porId: owner && owner.email.toLowerCase() || '',
+      contratos: documents, contrato: documents[0] || null
+    }));
+  }
   const ownerIds = [...new Set(rows.map(property => property.anunciante_id).filter(Boolean))];
   const owners = new Map();
   if (ownerIds.length) {
@@ -61,8 +105,14 @@ async function loadAdminProperties() {
     }
   }
 
+  const loadedProperties = rows.map(property => {
+      const normalized = adminPropertyFromRow(property, photosByProperty.get(property.id) || []);
+      if (dealsByProperty.has(property.id)) normalized.fech = dealsByProperty.get(property.id);
+      return normalized;
+  });
+  adminPropertyBaseline = new Map(loadedProperties.map(property => [property._dbId, adminPropertySnapshot(property)]));
   return {
-    properties: rows.map(property => adminPropertyFromRow(property, photosByProperty.get(property.id) || [])),
+    properties: loadedProperties,
     advertisers: rows.filter(property => property.anunciante_id).map(property => {
       const owner = owners.get(property.anunciante_id) || {};
       return {
@@ -99,7 +149,9 @@ const propertyRowFromAdmin = (property, ownerId) => ({
   valor: Number(property.valor) || 0,
   descricao: property.texto || null,
   video_url: property.video || null,
-  fechado_em: property.fechado_em || (property.fech && typeof property.fech === 'string' ? property.fech : null),
+  fechado_em: property.fechado_em || (property.fech && typeof property.fech === 'object' && property.fech.data
+    ? new Date(property.fech.data + 'T12:00:00').toISOString()
+    : property.fech && typeof property.fech === 'string' ? property.fech : null),
   arquivado_em: property.arquivado && property.arquivado.em || null,
   arquivado_motivo: property.arquivado && property.arquivado.motivo || null,
   arquivado_por: property._archiveOwnerId || null
@@ -228,14 +280,89 @@ async function saveAdminProperty(property, owner) {
     saved = result.data;
   }
   const photos = await uploadPropertyPhotos(saved.id, property, property._photoRows || []);
-  return Object.assign({}, property, { _dbId: saved.id, _ownerId: ownerId, cod: saved.codigo, _photoRows: photos });
+  const result = Object.assign({}, property, { _dbId: saved.id, _ownerId: ownerId, cod: saved.codigo, _photoRows: photos });
+  adminPropertyBaseline.set(saved.id, adminPropertySnapshot(result));
+  return result;
 }
 
 async function persistAdminPropertyState(property) {
   if (!property || !property._dbId) throw new Error('Imóvel sem identificador do banco. Atualize a página.');
+  const baseline = adminPropertyBaseline.get(property._dbId);
+  let dealChanged = true;
+  if (baseline) {
+    try { dealChanged = JSON.stringify(JSON.parse(baseline).fech || null) !== JSON.stringify(property.fech || null); }
+    catch (_) { dealChanged = true; }
+  }
   const row = propertyRowFromAdmin(property, property._ownerId);
   const { error } = await requireSupabase().from('imoveis').update(row).eq('id', property._dbId);
   if (error) throw error;
+  if (dealChanged) await persistAdminDeal(property);
+  adminPropertyBaseline.set(property._dbId, adminPropertySnapshot(property));
+}
+
+async function persistAdminDeal(property) {
+  const client = requireSupabase();
+  let query = client.from('negocios').select('id').eq('imovel_id', property._dbId).maybeSingle();
+  const lookup = await query;
+  if (lookup.error) throw lookup.error;
+  const previousId = lookup.data && lookup.data.id;
+  const deal = property.fech;
+  if (!deal) {
+    if (!previousId) return;
+    const { error: detachError } = await client.from('negocios').update({ mensagem_id: null }).eq('id', previousId);
+    if (detachError) throw detachError;
+    const { data: docs, error: docsError } = await client.from('negocios_documentos').select('caminho').eq('negocio_id', previousId);
+    if (docsError) throw docsError;
+    const { error } = await client.from('negocios').delete().eq('id', previousId);
+    if (error) throw error;
+    if ((docs || []).length) {
+      const { error: removeError } = await client.storage.from('documentos').remove(docs.map(doc => doc.caminho));
+      if (removeError) throw removeError;
+    }
+    return;
+  }
+  const email = String(deal.clienteEmail || deal.email || '').trim().toLowerCase();
+  let customerId = deal._clientId || null;
+  if (email) {
+    const found = await client.from('clientes').select('id').eq('email', email).limit(1).maybeSingle();
+    if (found.error) throw found.error;
+    if (found.data) customerId = found.data.id;
+    else customerId = await findOrSaveAdvertiser({ nome: deal.cliente || '', email, telefone: deal.tel || '', cpf: deal.cpf || '', rg: deal.rg || '' });
+  }
+  const responsible = TEAM().find(person => person.email.toLowerCase() === String(deal.porId || '').toLowerCase()) || TEAM().find(person => person.id === deal.porId);
+  const row = { imovel_id: property._dbId, tipo: property.st === 'alugado' ? 'locacao' : 'venda', cliente_id: customerId,
+    origem: deal.origem === 'whats' ? 'whatsapp' : deal.origem || 'outro',
+    mensagem_id: typeof deal.msgId === 'string' && /^[0-9a-f-]{36}$/i.test(deal.msgId) ? deal.msgId : null,
+    data_negocio: deal.data || new Date().toISOString().slice(0, 10), valor: Number(deal.valor) || Number(property.valor) || 0,
+    forma_pagamento: deal.pagamento || null, financiado: /financiamento/i.test(deal.pagamento || ''),
+    entrada: Number(deal.entrada) || null, parcelas: Number(deal.parcelasQuantidade) || null,
+    valor_parcela: Number(deal.parcelaValor) || null, observacoes: deal.obs || null,
+    responsavel_id: responsible && responsible.id || null };
+  const saved = previousId
+    ? await client.from('negocios').update(row).eq('id', previousId).select('id').single()
+    : await client.from('negocios').insert(row).select('id').single();
+  if (saved.error) throw saved.error;
+  deal._dealId = saved.data.id;
+  const bucket = client.storage.from('documentos');
+  for (const document of deal.contratos || []) {
+    if (document.path) continue;
+    if (!String(document.dados || '').startsWith('data:')) throw new Error('O contrato precisa ser selecionado novamente para ser enviado ao Supabase.');
+    const response = await fetch(document.dados);
+    if (!response.ok) throw new Error('Não foi possível preparar o contrato para envio.');
+    const blob = await response.blob();
+    const extension = String(document.formato || 'pdf').toLowerCase();
+    const path = 'negocios/' + saved.data.id + '/' + crypto.randomUUID() + '.' + extension;
+    const upload = await bucket.upload(path, blob, { contentType: document.tipo || blob.type, upsert: false });
+    if (upload.error) throw upload.error;
+    const inserted = await client.from('negocios_documentos').insert({ negocio_id: saved.data.id, caminho: path,
+      nome_original: document.nome || 'contrato.' + extension, mime: document.tipo || blob.type, tamanho: blob.size, criado_por: (me() && TEAM().find(person => person.email.toLowerCase() === me().email.toLowerCase()) || {}).id || null }).select('id').single();
+    if (inserted.error) { await bucket.remove([path]); throw inserted.error; }
+    document.path = path;
+    document.id = inserted.data.id;
+    const signed = await bucket.createSignedUrl(path, 3600);
+    if (signed.error) throw signed.error;
+    document.dados = signed.data.signedUrl;
+  }
 }
 
 async function deleteAdminProperty(property) {

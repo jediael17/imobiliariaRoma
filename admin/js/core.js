@@ -55,8 +55,14 @@ const sOf=i=>i.st||'disp',bd=(c,t)=>'<span class="bd '+c+'">'+t+'</span>';
 const sBd=i=>bd(sOf(i)==='disp'?'ok':sOf(i)==='vendido'?'sold':'rent',STL[sOf(i)]);
 let page='dash',ed=null,hl=null,flt={q:'',s:'',f:'',o:'',t:'',m:'',mine:''},imageProcessing=false,imageProgress={visible:false,percent:0,label:''},designSlides=[],designSlidesLoaded=false,designSlidesLoading=false,designSlidesError=false,designSlidesProcessing=false,designSlidesProgress={percent:0,label:''};
 const saveIM=async()=>{
- for(const property of IM)await persistAdminPropertyState(property);
- return true
+ try{
+  for(const property of IM){
+   if(property._dbId&&adminPropertyBaseline.get(property._dbId)===adminPropertySnapshot(property))continue;
+   await persistAdminPropertyState(property);
+   if(property._dbId)adminPropertyBaseline.set(property._dbId,adminPropertySnapshot(property));
+  }
+  return true
+ }catch(error){console.error('Falha ao salvar estado dos imóveis no Supabase.',error);toast('Não foi possível salvar no Supabase: '+supabaseMessage(error));return false}
 };
 const advertiserFor=cod=>ANUNCIANTES.find(x=>x.cod===cod)||{nome:'',cpf:'',rg:'',telefone:'',email:''};
 const savePropertyAndAdvertiser=async(property)=>{
@@ -68,11 +74,10 @@ const savePropertyAndAdvertiser=async(property)=>{
  return true;
 };
 const deleteClientByEmail=email=>{
- const key=String(email||'').toLowerCase(),previousUsers=US(),nextUsers=previousUsers.filter(user=>String(user.email||'').toLowerCase()!==key),previousAdvertisers=ANUNCIANTES,nextAdvertisers=previousAdvertisers.filter(advertiser=>String(advertiser.email||'').toLowerCase()!==key),previousAdminClients=ADMIN_CLIENTS(),nextAdminClients=previousAdminClients.filter(client=>String(client.email||'').toLowerCase()!==key);
- if(!DB.set('roma_users',nextUsers)){toast('Não foi possível excluir o cliente.');return false}
- if(!DB.set('roma_anunciantes',nextAdvertisers)){if(!DB.set('roma_users',previousUsers))console.error('Não foi possível reverter a exclusão do cliente no cadastro de compradores.');toast('Não foi possível excluir os dados do anunciante.');return false}
- if(!DB.set(ADMIN_CLIENTS_KEY,nextAdminClients)){if(!DB.set('roma_anunciantes',previousAdvertisers))console.error('Não foi possível reverter a exclusão dos dados do anunciante.');if(!DB.set('roma_users',previousUsers))console.error('Não foi possível reverter a exclusão do cliente no cadastro de compradores.');toast('Não foi possível excluir os dados pessoais do cliente.');return false}
- ANUNCIANTES=nextAdvertisers;return true
+ const key=String(email||'').toLowerCase(),next=ADMIN_CLIENTS().filter(client=>String(client.email||'').toLowerCase()!==key);
+ if(!DB.set(ADMIN_CLIENTS_KEY,next)){toast('Não foi possível excluir o cliente.');return false}
+ ANUNCIANTES=ANUNCIANTES.filter(advertiser=>String(advertiser.email||'').toLowerCase()!==key);
+ return true
 };
 const deletePropertyAndAdvertiser=async cod=>{
  const property=IM.find(item=>item.cod===cod);
