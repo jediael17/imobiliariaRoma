@@ -6,5 +6,5 @@
 const ROMA_CONFIG = {
   supabaseUrl: 'https://chgleblmgemirixmlzuq.supabase.co',
   supabaseKey: 'sb_publishable_Jr4H2ACiVqTL08l0ZI72GA_1H2L4wEi',
-  whatsapp: '5531900000000'
+  whatsapp: '5531991214937'
 };
