@@ -220,6 +220,8 @@ th.r {
 
 .imv-action.imv-sale svg {
   color:#35a765;
+  fill:currentColor;
+  stroke:none;
 }
 
 .btn.imv-action.imv-sale {
@@ -398,6 +400,52 @@ th.r {
   margin-bottom:0;
 }
 
+.visit-history {
+  margin:16px 0;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#faf8f4;
+}
+
+.visit-history h4 {
+  margin:0 0 10px;
+  font-size:1rem;
+}
+
+.visit-history p {
+  margin:0;
+}
+
+.visit-email-option span {
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+
+.visit-email-option input {
+  width:auto;
+}
+
+.visit-history ul {
+  display:grid;
+  gap:10px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+
+.visit-history li {
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.visit-history li span {
+  color:var(--mut);
+}
+
 .deal-documents {
   display:flex;
   justify-content:flex-end;
@@ -506,9 +554,31 @@ th.r {
   background:#f0fff5;
 }
 
+.msg-icon-whatsapp svg {
+  fill:currentColor;
+  stroke:none;
+}
+
 .msg-icon-whatsapp:hover {
   border-color:#25d366;
   background:#e1faeb;
+}
+
+.btn.msg-icon-sell {
+  color:#16803c;
+  border-color:#72c98b;
+  background:#effaf1;
+}
+
+.msg-icon-sell svg {
+  fill:currentColor;
+  stroke:none;
+}
+
+.btn.msg-icon-sell:hover {
+  color:#126b32;
+  border-color:#35a85a;
+  background:#e4f6e8;
 }
 
 .msg-icon-trash {
@@ -533,6 +603,27 @@ th.r {
   width:26px;
   height:26px;
   stroke-width:1.9;
+}
+
+.btn.msg-icon-visit {
+  color:#315f8f;
+  border-color:#b9cfe5;
+  background:#f1f7fc;
+}
+
+.msg-icon-visit svg {
+  fill:currentColor;
+  stroke:none;
+}
+
+.btn.msg-icon-visit:hover {
+  color:#244b73;
+  border-color:#8eafd0;
+  background:#e5f0f9;
+}
+
+.msg-actions .msg-icon-visit {
+  margin-left:auto;
 }
 
 .msg.hl {

@@ -70,7 +70,10 @@ const savePropertyAndAdvertiser=async(property)=>{
  const index=IM.findIndex(item=>item===property||item.cod===property.cod);
  if(index<0)IM.unshift(saved);else IM[index]=saved;
  ed=Object.assign({},saved);
- ANUNCIANTES=ANUNCIANTES.filter(item=>item.cod!==saved.cod).concat(Object.assign({data:new Date().toISOString()},edOwner,{cod:saved.cod}));
+ const previousAdvertiser=ANUNCIANTES.find(item=>item.cod===saved.cod);
+ ANUNCIANTES=ANUNCIANTES.filter(item=>item.cod!==saved.cod);
+ if(Object.values(edOwner).some(value=>String(value||'').trim()))ANUNCIANTES.push(Object.assign({data:new Date().toISOString()},edOwner,{cod:saved.cod}));
+ else if(saved._ownerId&&previousAdvertiser)ANUNCIANTES.push(previousAdvertiser);
  return true;
 };
 const deleteClientByEmail=email=>{
@@ -98,9 +101,11 @@ const MAX_PROPERTY_IMAGE_BYTES=1500000;
 const readFileDataUrl=(file,onProgress=()=>{})=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onprogress=e=>{if(e.lengthComputable)onProgress(e.loaded/e.total)};reader.onload=()=>{onProgress(1);resolve(String(reader.result))};reader.onerror=()=>reject(new Error('não foi possível ler o arquivo'));reader.readAsDataURL(file)});
 const loadImageFile=(file,onLoad=()=>{})=>new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),image=new Image();image.onload=()=>{URL.revokeObjectURL(url);onLoad();resolve(image)};image.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('o arquivo não é uma imagem válida'))};image.src=url});
 const canvasBlob=(canvas,type,quality)=>new Promise((resolve,reject)=>{canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('não foi possível compactar a imagem')),type,quality)});
+let propertyWatermarkPromise;
+const propertyWatermark=()=>propertyWatermarkPromise||(propertyWatermarkPromise=new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(new Error('não foi possível carregar a logo para marcar as fotos'));image.src='../img/logo.png'}));
+const drawPropertyWatermark=async(context,width,height)=>{const logo=await propertyWatermark(),maxWidth=width*.32,maxHeight=height*.24,scale=Math.min(maxWidth/logo.naturalWidth,maxHeight/logo.naturalHeight),logoWidth=logo.naturalWidth*scale,logoHeight=logo.naturalHeight*scale;context.save();context.globalAlpha=.4;context.drawImage(logo,(width-logoWidth)/2,(height-logoHeight)/2,logoWidth,logoHeight);context.restore()};
 const readImg=async(file,onProgress=()=>{},maxBytes=MAX_PROPERTY_IMAGE_BYTES)=>{
  if(!file.type.startsWith('image/'))throw new Error('selecione um arquivo de imagem');
- if(file.size<=maxBytes){const data=await readFileDataUrl(file,onProgress);return{data,compressed:false,size:file.size}}
  onProgress(.02);
  const image=await loadImageFile(file,()=>onProgress(.08)),canvas=document.createElement('canvas'),context=canvas.getContext('2d');
  if(!context)throw new Error('o navegador não conseguiu preparar a imagem');
@@ -110,14 +115,14 @@ const readImg=async(file,onProgress=()=>{},maxBytes=MAX_PROPERTY_IMAGE_BYTES)=>{
  let attempts=0;
  onProgress(.1);
  while(true){
-  canvas.width=width;canvas.height=height;context.clearRect(0,0,width,height);context.drawImage(image,0,0,width,height);
+  canvas.width=width;canvas.height=height;context.clearRect(0,0,width,height);context.drawImage(image,0,0,width,height);await drawPropertyWatermark(context,width,height);
   let lastBlob;
   for(const quality of qualities){
    let blob=await canvasBlob(canvas,'image/webp',quality);
    if(blob.type!=='image/webp'){context.save();context.globalCompositeOperation='destination-over';context.fillStyle='#fff';context.fillRect(0,0,width,height);context.restore();blob=await canvasBlob(canvas,'image/jpeg',quality)}
    lastBlob=blob;
    attempts++;onProgress(Math.min(.9,.1+.8*attempts/estimatedAttempts));
-   if(blob.size<=maxBytes){const data=await readFileDataUrl(blob,value=>onProgress(.9+.1*value));onProgress(1);return{data,compressed:true,size:blob.size}}
+   if(blob.size<=maxBytes){const data=await readFileDataUrl(blob,value=>onProgress(.9+.1*value));onProgress(1);return{data,compressed:file.size>maxBytes||blob.type!==file.type||blob.size!==file.size,size:blob.size}}
   }
   if(Math.max(width,height)<=320)break;
   const scale=Math.max(.75,Math.min(.9,Math.sqrt(maxBytes/lastBlob.size)*.95));

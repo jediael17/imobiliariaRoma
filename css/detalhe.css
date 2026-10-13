@@ -1,5 +1,14 @@
 /* Página de detalhe do imóvel */
 
+.thumb,
+.slide .bg,
+.gmain,
+.gth button,
+.gallery-lightbox-stage img {
+  -webkit-touch-callout:none;
+  user-select:none;
+}
+
 .det {
   padding:130px 0 80px;
 }

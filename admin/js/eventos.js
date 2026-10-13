@@ -30,4 +30,4 @@ document.addEventListener('change',async e=>{const t=e.target;
  }
 
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDeal();document.querySelectorAll('#msgDeleteDialog,#msgSaleDialog,#msgWithdrawDialog').forEach(o=>o.remove())}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeDeal();document.querySelectorAll('#msgDeleteDialog,#msgSaleDialog,#msgWithdrawDialog,#msgVisitDialog').forEach(o=>o.remove())}});

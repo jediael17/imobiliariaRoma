@@ -261,7 +261,8 @@ async function uploadPropertyPhotos(propertyId, property, previousRows) {
 
 async function saveAdminProperty(property, owner) {
   const client = requireSupabase();
-  const ownerId = await findOrSaveAdvertiser(owner, property._ownerId);
+  const hasOwnerData = ['nome', 'cpf', 'rg', 'telefone', 'email'].some(key => String(owner && owner[key] || '').trim());
+  const ownerId = hasOwnerData ? await findOrSaveAdvertiser(owner, property._ownerId) : property._ownerId || null;
   const row = propertyRowFromAdmin(property, ownerId);
   let saved;
   if (property._dbId) {

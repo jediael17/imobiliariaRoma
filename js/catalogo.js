@@ -31,7 +31,7 @@ const toggleFavorite=async cod=>{
  apply();
 };
 const stTag=i=>'<span class="tag'+(i.st&&i.st!=='disp'?' sold':'')+'">'+(i.st==='vendido'?'Vendido':i.st==='alugado'?'Alugado':i.fin==='venda'?'Venda':'Aluguel')+'</span>';
-const desc=i=>i.tipo+' com '+F(i.area)+' m² de área útil'+(i.q?', '+pl(i.q,'quarto','quartos')+(i.s?' ('+pl(i.s,'suíte','suítes')+')':''):'')+', '+pl(i.b,'banheiro','banheiros')+' e garagem para '+pl(i.v,'carro','carros')+'.';
+const desc=i=>esc(i.texto||'');
 const it=(k,n,t)=>'<span title="'+t+'" aria-label="'+t+'">'+IC[k]+n+'</span>';
 const card=i=>'<article class="card'+(i.st&&i.st!=='disp'?' sold':'')+'"><div class="thumb" data-art="'+i.art+'">'+stTag(i)+favoriteButton(i)+'</div><div class="body"><span class="cod">Cód. '+i.cod+'</span><h3>'+i.titulo+'</h3><p class="loc">'+i.tipo+' · '+i.bairro+', '+i.cidade+'</p><p class="desc">'+desc(i)+'</p><div class="meta">'
  +(i.q?it('bed',i.q,pl(i.q,'quarto','quartos')):'')+(i.s?it('suite',i.s,pl(i.s,'suíte','suítes')):'')+it('bath',i.b,pl(i.b,'banheiro','banheiros'))+it('car',i.v,'Garagem para '+pl(i.v,'carro','carros'))+it('area',F(i.area)+' m²',F(i.area)+' metros quadrados')

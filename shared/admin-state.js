@@ -71,7 +71,7 @@ function persistAdminStateKey(key, next) {
         const prior = original.data && original.data.detalhes || {};
         const details = Object.assign({}, prior, { campos: (message.campos || []).filter(field => !['Nome completo', 'WhatsApp', 'E-mail'].includes(field.k)) });
         const extra = Object.assign({}, prior._admin || {});
-        for (const prop of ['negocio', 'desistencia', 'anuncioCriado']) if (message[prop] !== undefined) extra[prop] = message[prop];
+        for (const prop of ['negocio', 'desistencia', 'anuncioCriado', 'visitas']) if (message[prop] !== undefined) extra[prop] = message[prop];
         details._admin = extra;
         const base = (message.campos || []).reduce((out, field) => (out[field.k] = field.v, out), {});
         const row = { tipo: message.tipo, nome: base['Nome completo'] || 'Cliente', telefone: base.WhatsApp || null,

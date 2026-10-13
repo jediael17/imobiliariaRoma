@@ -11,17 +11,19 @@ document.addEventListener('click', async event => {
    if(imageProcessing)return toast('Aguarde o processamento das imagens antes de salvar.');
    collect();
    if(!ed.titulo||!ed.cidade||!ed.valor)return toast('Preencha título, cidade e valor.');
-   if(!edOwner.nome||!edOwner.cpf||!edOwner.rg||!edOwner.telefone||!edOwner.email)return toast('Preencha todos os dados obrigatórios do cliente anunciante.');
-   if(!validCPF(edOwner.cpf))return toast('Informe um CPF válido.');
-   if(![10,11].includes(edOwner.telefone.replace(/\D/g,'').length))return toast('Informe um telefone válido com DDD.');
-   if(!$('o_email').checkValidity())return toast('Informe um e-mail válido.');
+   if(!ed.texto||!ed.texto.trim())return toast('Preencha a descrição do imóvel.');
+   const hasAdvertiserData=Object.values(edOwner).some(value=>String(value||'').trim());
+   if(hasAdvertiserData&&(!edOwner.nome||!edOwner.cpf||!edOwner.rg||!edOwner.telefone||!edOwner.email))return toast('Para cadastrar o anunciante, preencha todos os dados. Você também pode salvar sem informar cliente.');
+   if(hasAdvertiserData&&!validCPF(edOwner.cpf))return toast('Informe um CPF válido.');
+   if(hasAdvertiserData&&![10,11].includes(edOwner.telefone.replace(/\D/g,'').length))return toast('Informe um telefone válido com DDD.');
+   if(hasAdvertiserData&&!$('o_email').checkValidity())return toast('Informe um e-mail válido.');
    if((ed.fotos||[]).length>14)return toast('O limite é de 14 fotos por imóvel.');
    if(ed.video&&!youtubeVideoId(ed.video))return toast('Informe um link válido de vídeo do YouTube.');
    await savePropertyAndAdvertiser(ed);
    ed=null;
    edOwner={nome:'',cpf:'',rg:'',telefone:'',email:''};
    edAdvertiserMessageId=null;
-   toast('Imóvel, anunciante e fotos salvos no Supabase.');
+   toast('Imóvel e fotos salvos no Supabase.');
    render();
    return;
   }
