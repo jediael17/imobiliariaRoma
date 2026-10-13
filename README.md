@@ -68,6 +68,8 @@ Para o banco já existente, execute uma vez `supabase/sql/03_corrigir_views_publ
 
 ## Painel administrativo
 
+- Para o número do WhatsApp configurado no painel aparecer nos links públicos, execute também `supabase/sql/06_whatsapp_publico.sql` no SQL Editor do Supabase depois de `supabase/sql/04_configuracoes_painel.sql`.
+
 - O painel não tem mais senha padrão local. O acesso exige login Google pelo Supabase e um e-mail ativo na tabela `public.equipe`.
 - Em **Equipe**, um administrador pode cadastrar o e-mail e o papel de cada pessoa. O provedor Google do Supabase deve estar habilitado.
 - A equipe não é excluída: administradores podem inativar ou reativar cada acesso. A inativação preserva os dados e históricos da pessoa e bloqueia novas sessões e sessões já abertas.
